@@ -4,15 +4,15 @@
 
 ## Alunos integrantes da equipe
 
-* [Nome completo do aluno 1]
-* [Nome completo do aluno 2]
-* [Nome completo do aluno 3]
-* [Nome completo do aluno 4]
+* Eduardo Murta de Abreu
+* Jamille Micaele Soares Ferreira
+* João Pedro Costa e Silva
+* Larissa Varella Araújo
 
 ## Professores responsáveis
 
-* [Nome completo do professor 1]
-* [Nome completo do professor 2]
+* Amália Soares Vieira de Vasconcelos
+* Max do Val Machado
 
 ## Instruções de utilização
 
