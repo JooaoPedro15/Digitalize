@@ -1,0 +1,14 @@
+{
+  "/api/empresas": "/empresas",
+  "/api/empresas/:id": "/empresas/:id",
+  "/api/empresas/:id/status": "/empresas/:id",
+  "/api/usuarios": "/usuarios",
+  "/api/usuarios/:id": "/usuarios/:id",
+  "/api/produtos": "/produtos",
+  "/api/produtos/:id": "/produtos/:id",
+  "/api/avaliacoes": "/avaliacoes",
+  "/api/avaliacoes/:id": "/avaliacoes/:id",
+  "/api/parceiros": "/parceiros",
+  "/api/favoritos": "/favoritos",
+  "/api/*": "/$1"
+}

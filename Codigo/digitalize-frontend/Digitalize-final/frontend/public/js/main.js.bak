@@ -1,0 +1,113 @@
+// JavaScript Principal Unificado
+
+class DigitalizeApp {
+    constructor() {
+        this.apiBase = \'/api\';
+        this.currentPage = \'home\';
+        this.data = {
+            empresas: [],
+            produtos: [],
+            usuarios: [],
+            parceiros: [],
+            avaliacoes: []
+        };
+        this.init();
+    }
+
+    async init() {
+        await this.loadData();
+        this.setupEventListeners();
+        this.renderCurrentPage();
+    }
+
+    async loadData() {
+        try {
+            const [empresas, produtos, usuarios, parceiros, avaliacoes] = await Promise.all([
+                this.fetchData(\'/empresas\'),
+                this.fetchData(\'/produtos\'),
+                this.fetchData(\'/usuarios\'),
+                this.fetchData(\'/parceiros\'),
+                this.fetchData(\'/avaliacoes\')
+            ]);
+
+            this.data = { empresas, produtos, usuarios, parceiros, avaliacoes };
+            console.log(\'Dados carregados:\', this.data);
+        } catch (error) {
+            console.error(\'Erro ao carregar dados:\', error);
+            this.showError(\'Erro ao carregar dados do servidor\');
+        }
+    }
+
+    async fetchData(endpoint) {
+        const response = await fetch(`${this.apiBase}${endpoint}`);
+        if (!response.ok) {
+            throw new Error(`Erro ao buscar ${endpoint}: ${response.statusText}`);
+        }
+        return await response.json();
+    }
+
+    setupEventListeners() {
+        // Navegação
+        document.addEventListener(\'click\', (e) => {
+            if (e.target.matches(\'[data-page]\')) {
+                e.preventDefault();
+                this.navigateTo(e.target.dataset.page);
+            }
+        });
+
+        // Formulários
+        document.addEventListener(\'submit\', (e) => {
+            if (e.target.matches(\'#empresa-form\')) {
+                e.preventDefault();
+                this.handleEmpresaForm(e.target);
+            }
+        });
+
+        // Filtros e pesquisa
+        document.addEventListener(\'input\', (e) => {
+            if (e.target.matches(\'#search-input\')) {
+                this.handleSearch(e.target.value);
+            }
+        });
+    }
+
+    navigateTo(page) {
+        this.currentPage = page;
+        this.renderCurrentPage();
+        
+        // Atualizar URL sem recarregar a página
+        history.pushState({ page }, \'\', `#${page}`);
+    }
+
+    renderCurrentPage() {
+        const content = document.getElementById(\'main-content\');
+        if (!content) return;
+
+        switch (this.currentPage) {
+            case \'home\':
+                this.renderHomePage(content);
+                break;
+            case \'empresas\':
+                this.renderEmpresasPage(content);
+                break;
+            case \'cadastro\':
+                this.renderCadastroPage(content);
+                break;
+            case \'admin\':
+                this.renderAdminPage(content);
+                break;
+            case \'mapa\':
+                this.renderMapaPage(content);
+                break;
+            case \'parceiros\':
+                this.renderParceirosPage(content);
+                break;
+            default:
+                this.renderHomePage(content);
+        }
+    }
+
+    renderHomePage(container) {
+        container.innerHTML = `
+            <div class=\
+

@@ -1,0 +1,144 @@
+{
+  "empresas": [
+    {
+      "id": "1",
+      "nome": "TechSolutions Ltda",
+      "email": "contato@techsolutions.com",
+      "telefone": "(11) 99999-9999",
+      "endereco": "Rua das Flores, 123",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "cep": "01234-567",
+      "categoria": "Tecnologia",
+      "descricao": "Empresa especializada em soluções tecnológicas",
+      "status": "aprovada",
+      "dataCadastro": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "1750269979140",
+      "nomeFantasia": "EMPRESA",
+      "razaoSocial": "EMPRESATESTE",
+      "cnpj": "88.888.888/8888-88",
+      "segmento": "Comércio",
+      "endereco": {
+        "cep": "13112-005",
+        "logradouro": "Rua que eu moro",
+        "cidade": "BELO HORIZONTE",
+        "estado": "MG"
+      },
+      "responsavel": {
+        "nome": "RAFAEL RAMALDES ",
+        "email": "rafarno10@gmail.com",
+        "telefone": "(31) 98989-4364",
+        "cargo": "CEO"
+      },
+      "servicosInteresse": [
+        "site"
+      ],
+      "observacoes": "knnowieo",
+      "status": "rejeitada",
+      "dataCadastro": "2025-06-18T18:06:19.140Z"
+    },
+    {
+      "id": "1750272508824",
+      "nomeFantasia": "AED",
+      "razaoSocial": "Algoritimos e Estruturas de Dados",
+      "cnpj": "33.333.333/3333-333",
+      "segmento": "Tecnologia",
+      "endereco": {
+        "cep": "23112-020",
+        "rua": "rua theldo",
+        "cidade": "Ibirité",
+        "estado": "MG"
+      },
+      "responsavel": {
+        "nome": "Rafael 1",
+        "email": "rafael1@email.com",
+        "telefone": "(31) 99999-9999",
+        "cargo": "CEO"
+      },
+      "servicosInteresse": [
+        "marketing",
+        "redes"
+      ],
+      "observacoes": "Essa é uma materia do curso de ciencia da computacao",
+      "status": "aprovada",
+      "dataCadastro": "2025-06-18T18:48:28.824Z",
+      "responsavelNome": "Rafael 1",
+      "responsavelCargo": "CEO",
+      "responsavelEmail": "rafael1@email.com",
+      "responsavelTelefone": "(31) 99999-9999",
+      "dataAtualizacao": "2025-06-22T19:58:59.692Z"
+    }
+  ],
+  "produtos": [],
+  "usuarios": [
+    {
+      "id": 1,
+      "nome": "Administrador",
+      "email": "admin@digitalize.com",
+      "senha": "admin123",
+      "tipo": "admin",
+      "ativo": true,
+      "dataCadastro": "2025-06-01T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "nome": "Usuário Teste",
+      "email": "usuario@teste.com",
+      "senha": "123456",
+      "tipo": "usuario",
+      "ativo": true,
+      "dataCadastro": "2025-06-01T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "nome": "rafael ramaldes",
+      "email": "rafarno10@gmail.com",
+      "senha": "123",
+      "tipo": "usuario",
+      "ativo": true,
+      "dataCadastro": "2025-06-18T18:04:21.933Z"
+    },
+    {
+      "id": 4,
+      "nome": "joao",
+      "email": "joao@email",
+      "senha": "1234",
+      "tipo": "usuario",
+      "ativo": true,
+      "dataCadastro": "2025-06-18T18:17:36.746Z"
+    },
+    {
+      "id": 5,
+      "nome": "rafael",
+      "email": "rafael@email.com",
+      "senha": "123",
+      "tipo": "usuario",
+      "ativo": true,
+      "dataCadastro": "2025-06-18T18:19:01.455Z"
+    },
+    {
+      "id": 6,
+      "nome": "rafael 1",
+      "email": "rafael1@email.com",
+      "senha": "123",
+      "tipo": "usuario",
+      "ativo": true,
+      "dataCadastro": "2025-06-18T18:42:02.240Z"
+    },
+    {
+      "id": 7,
+      "nome": "rafael 2",
+      "email": "rafael2@email.com",
+      "senha": "123",
+      "tipo": "usuario",
+      "ativo": true,
+      "dataCadastro": "2025-06-18T19:38:43.895Z"
+    }
+  ],
+  "configuracoesSistema": [],
+  "parceiros": [],
+  "avaliacoes": [],
+  "favoritos": []
+}
