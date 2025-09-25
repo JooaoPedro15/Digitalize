@@ -1,5 +1,5 @@
 
-#🚀 Digitalize
+# Digitalize
 
 O Digitalize é um projeto de desenvolvimento e pesquisa focado em superar a falta de presença online de microempreendedores.
 
