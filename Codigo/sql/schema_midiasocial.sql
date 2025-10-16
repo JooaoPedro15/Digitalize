@@ -1,90 +1,77 @@
--- CRIACAO DO ESQUEMA
-
+-- schema
 CREATE SCHEMA IF NOT EXISTS midiasocial;
 SET search_path TO midiasocial;
 
-
--- TABELA EMPRESA
-
-CREATE TABLE empresa (
-    empresa_id      BIGSERIAL PRIMARY KEY,
-    nome_fantasia   VARCHAR(120)  NOT NULL,
-    cnpj            CHAR(14)      NOT NULL
+-- TABELA: EMPRESA
+CREATE TABLE IF NOT EXISTS empresa (
+    cnpj             CHAR(14) PRIMARY KEY
                      CHECK (cnpj ~ '^[0-9]{14}$'),
-    razao_social    VARCHAR(120)  NOT NULL,
-    segmento        VARCHAR(40),
-    endereco        VARCHAR(200),
-    status          VARCHAR(12)   NOT NULL DEFAULT 'ATIVO'
-                     CHECK (status IN ('ATIVO','INATIVO'))
+    nome_fantasia    VARCHAR(120) NOT NULL,
+    razao_social     VARCHAR(120) NOT NULL,   -- 120 da mais folga
+    segmento         VARCHAR(40),
+    endereco         VARCHAR(200),
+    status           VARCHAR(12) NOT NULL DEFAULT 'ATIVA'
+                     CHECK (status IN ('ATIVA','INATIVA'))
 );
 
+-- TABELA: CANAL  (canal + importacao + post em uma tabela; cada linha = 1 post)
+CREATE TABLE IF NOT EXISTS canal (
+    canal_id                     BIGSERIAL PRIMARY KEY,
+    plataforma                   VARCHAR(20)  NOT NULL
+                                  CHECK (plataforma IN ('YouTube','TikTok','Instagram')),
+    canal_identificador          VARCHAR(80)  NOT NULL,
 
--- TABELA CANAL
+    importacao_arquivo_original  VARCHAR(255),
+    importacao_periodo_inicio    DATE,
+    importacao_periodo_fim       DATE,
+    importacao_status            VARCHAR(12)  DEFAULT 'PENDENTE'
+                                  CHECK (importacao_status IN ('PENDENTE','PROCESSADO','ERRO')),
+    CONSTRAINT ck_import_periodo_ok
+        CHECK (importacao_periodo_fim IS NULL
+            OR importacao_periodo_inicio IS NULL
+            OR importacao_periodo_fim >= importacao_periodo_inicio),
 
-CREATE TABLE canal (
-    canal_id        BIGSERIAL PRIMARY KEY,
-    empresa_id      BIGINT       NOT NULL REFERENCES empresa(empresa_id)
-                                 ON DELETE CASCADE,
-    plataforma      VARCHAR(20)  NOT NULL
-                     CHECK (plataforma IN ('YouTube','TikTok','Instagram')),
-    identificador   VARCHAR(80)  NOT NULL,
-    CONSTRAINT uq_canal UNIQUE (empresa_id, plataforma, identificador)
+
+    data_hora                    TIMESTAMP NOT NULL DEFAULT NOW(),
+    legenda                      VARCHAR(300),
+    duracao                      INT          CHECK (duracao >= 0),
+    alcance                      INT NOT NULL DEFAULT 0 CHECK (alcance      >= 0),
+    views                        INT NOT NULL DEFAULT 0 CHECK (views        >= 0),
+    likes                        INT NOT NULL DEFAULT 0 CHECK (likes        >= 0),
+    shares                       INT NOT NULL DEFAULT 0 CHECK (shares       >= 0),
+    comentarios                  INT NOT NULL DEFAULT 0 CHECK (comentarios  >= 0),
+    saves                        INT NOT NULL DEFAULT 0 CHECK (saves        >= 0),
+
+    empresa_cnpj                 CHAR(14) NOT NULL,
+    CONSTRAINT fk_canal_empresa
+        FOREIGN KEY (empresa_cnpj)
+        REFERENCES empresa (cnpj)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
-
--- TABELA IMPORTAÇÃO
-
-CREATE TABLE importacao (
-    importacao_id   BIGSERIAL PRIMARY KEY,
-    canal_id        BIGINT       NOT NULL REFERENCES canal(canal_id)
-                                 ON DELETE CASCADE,
-    arquivo_original VARCHAR(255),
-    periodo_inicio  DATE         NOT NULL,
-    periodo_fim     DATE,
-    status          VARCHAR(12)  NOT NULL DEFAULT 'PENDENTE'
-                     CHECK (status IN ('PENDENTE','PROCESSADO','ERRO'))
-);
-
-
--- TABELA POST
-
-CREATE TABLE post (
-    post_id        BIGSERIAL PRIMARY KEY,
-    canal_id       BIGINT NOT NULL REFERENCES canal(canal_id)
-                               ON DELETE CASCADE,
-    importacao_id  BIGINT     REFERENCES importacao(importacao_id)
-                               ON DELETE SET NULL,
-    datahora       TIMESTAMP  NOT NULL DEFAULT NOW(),
-    alcance        INT        CHECK (alcance  >= 0),
-    views          INT        CHECK (views    >= 0),
-    shares         INT        CHECK (shares   >= 0),
-    likes          INT        CHECK (likes    >= 0),
-    comentarios    INT        CHECK (comentarios >= 0),
-    saves          INT        CHECK (saves    >= 0),
-    duracao        INT        CHECK (duracao  >  0),
-    legenda        VARCHAR(300)
-);
-
-
--- TABELA RECOMENDACAO
-
-CREATE TABLE recomendacao (
-    recomendacao_id BIGSERIAL PRIMARY KEY,
-    empresa_id      BIGINT  NOT NULL REFERENCES empresa(empresa_id)
-                             ON DELETE CASCADE,
-    canal_id        BIGINT  NOT NULL REFERENCES canal(canal_id)
-                             ON DELETE CASCADE,
-    tipo            VARCHAR(20) NOT NULL
+-- TABELA: RECOMENDACAO
+CREATE TABLE IF NOT EXISTS recomendacao (
+    recomendacao_id  BIGSERIAL PRIMARY KEY,
+    tipo             VARCHAR(20) NOT NULL
                      CHECK (tipo IN ('POSTAGEM','ESTRATEGIA','OTIMIZACAO')),
-    detalhes        TEXT
+    detalhes         TEXT,
+    empresa_cnpj     CHAR(14) NOT NULL,
+    CONSTRAINT fk_recomendacao_empresa
+        FOREIGN KEY (empresa_cnpj)
+        REFERENCES empresa (cnpj)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
+-- INDEXES
+CREATE INDEX IF NOT EXISTS idx_empresa_status   ON empresa(status);
+CREATE INDEX IF NOT EXISTS idx_canal_empresa    ON canal(empresa_cnpj);
+CREATE INDEX IF NOT EXISTS idx_canal_chave      ON canal(plataforma, canal_identificador);
+CREATE INDEX IF NOT EXISTS idx_canal_data       ON canal(plataforma, canal_identificador, data_hora DESC);
+CREATE INDEX IF NOT EXISTS idx_recomend_empresa ON recomendacao(empresa_cnpj);
 
--- INDICES EXTRAS (opcionais para performance)
 
-CREATE INDEX idx_post_canal   ON post(canal_id);
-CREATE INDEX idx_post_import  ON post(importacao_id);
-CREATE INDEX idx_import_canal ON importacao(canal_id);
-CREATE INDEX idx_rec_empresa  ON recomendacao(empresa_id);
-
--- FIM DO SCRIPT
+-- evita importar o mesmo post do mesmo canal com mesma data_hora+legenda
+CREATE UNIQUE INDEX IF NOT EXISTS uq_canal_dedup
+ON canal (plataforma, canal_identificador, data_hora, (COALESCE(legenda,'')));
