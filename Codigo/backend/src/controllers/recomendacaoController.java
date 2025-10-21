@@ -1,100 +1,95 @@
-// Importa o modelo Recomendacao para interagir com o banco de dados
-const Recomendacao = require('../models/Recomendacao');
+package src.controllers;
 
-// CRUD de Recomendações
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import src.models.Recomendacao;
+import src.repositories.RecomendacaoRepository;
 
-// Listar todas as recomendações
-const listarRecomendacoes = async (req, res) => {
-    try {
-        // Busca todas as recomendações no banco
-        const recomendacoes = await Recomendacao.findAll();
-        // Retorna os dados em formato JSON
-        res.json(recomendacoes);
-    } catch (error) {
-        // Em caso de erro, retorna status 500 com mensagem
-        res.status(500).json({ mensagem: 'Erro ao listar recomendações', erro: error.message });
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * RecomendacaoController
+ * Controlador responsável pelas operações CRUD relacionadas à entidade Recomendacao.
+ * Permite listar, criar, atualizar e remover recomendações vinculadas a empresas ou canais.
+ */
+@RestController
+@RequestMapping("/recomendacoes")
+public class RecomendacaoController {
+
+    // Injeta o repositório de Recomendacao, responsável por acessar o banco de dados
+    @Autowired
+    private RecomendacaoRepository recomendacaoRepository;
+
+    /**
+     * GET /recomendacoes
+     * Retorna a lista de todas as recomendações cadastradas.
+     */
+    @GetMapping
+    public ResponseEntity<List<Recomendacao>> listarRecomendacoes() {
+        List<Recomendacao> recomendacoes = recomendacaoRepository.findAll();
+        return ResponseEntity.ok(recomendacoes);
     }
-};
 
-// Buscar uma recomendação pelo ID
-const buscarRecomendacao = async (req, res) => {
-    try {
-        const { id } = req.params;
-        // Busca recomendação pelo ID
-        const recomendacao = await Recomendacao.findOne({ where: { id } });
-        if (!recomendacao) {
-            // Se não encontrar, retorna 404
-            return res.status(404).json({ mensagem: 'Recomendação não encontrada' });
+    /**
+     * GET /recomendacoes/{id}
+     * Retorna uma recomendação específica com base no ID informado.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        Optional<Recomendacao> recomendacaoOpt = recomendacaoRepository.findById(id);
+
+        if (recomendacaoOpt.isPresent()) {
+            return ResponseEntity.ok(recomendacaoOpt.get());
+        } else {
+            return ResponseEntity.status(404).body("Recomendação não encontrada.");
         }
-        res.json(recomendacao);
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao buscar recomendação', erro: error.message });
     }
-};
 
-// Criar uma nova recomendação
-const criarRecomendacao = async (req, res) => {
-    try {
-        const { titulo, conteudo, cnpj_empresa } = req.body;
-
-        // Cria e salva a nova recomendação no banco
-        const novaRecomendacao = await Recomendacao.create({
-            titulo,
-            conteudo,
-            cnpj_empresa  // Associa a recomendação à empresa correspondente
-        });
-
-        res.status(201).json(novaRecomendacao);
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao criar recomendação', erro: error.message });
+    /**
+     * POST /recomendacoes
+     * Cria uma nova recomendação com base nos dados enviados no corpo da requisição.
+     */
+    @PostMapping
+    public ResponseEntity<Recomendacao> criarRecomendacao(@RequestBody Recomendacao recomendacao) {
+        Recomendacao novaRecomendacao = recomendacaoRepository.save(recomendacao);
+        return ResponseEntity.ok(novaRecomendacao);
     }
-};
 
-// Atualizar uma recomendação existente
-const atualizarRecomendacao = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { titulo, conteudo } = req.body;
+    /**
+     * PUT /recomendacoes/{id}
+     * Atualiza os dados de uma recomendação existente com base no ID informado.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarRecomendacao(@PathVariable Long id, @RequestBody Recomendacao recomendacaoAtualizada) {
+        Optional<Recomendacao> recomendacaoOpt = recomendacaoRepository.findById(id);
 
-        // Busca a recomendação pelo ID
-        const recomendacao = await Recomendacao.findOne({ where: { id } });
-        if (!recomendacao) {
-            return res.status(404).json({ mensagem: 'Recomendação não encontrada' });
+        if (recomendacaoOpt.isPresent()) {
+            Recomendacao recomendacao = recomendacaoOpt.get();
+            recomendacao.setTipo(recomendacaoAtualizada.getTipo());
+            recomendacao.setDetalhes(recomendacaoAtualizada.getDetalhes());
+            recomendacao.setEmpresa(recomendacaoAtualizada.getEmpresa());
+            recomendacao.setCanal(recomendacaoAtualizada.getCanal());
+
+            recomendacaoRepository.save(recomendacao);
+            return ResponseEntity.ok("Recomendação atualizada com sucesso.");
+        } else {
+            return ResponseEntity.status(404).body("Recomendação não encontrada.");
         }
-
-        // Atualiza os campos informados
-        await recomendacao.update({ titulo, conteudo });
-
-        res.json(recomendacao);
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao atualizar recomendação', erro: error.message });
     }
-};
 
-// Deletar uma recomendação
-const deletarRecomendacao = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Busca a recomendação pelo ID
-        const recomendacao = await Recomendacao.findOne({ where: { id } });
-        if (!recomendacao) {
-            return res.status(404).json({ mensagem: 'Recomendação não encontrada' });
+    /**
+     * DELETE /recomendacoes/{id}
+     * Remove uma recomendação existente com base no ID informado.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletarRecomendacao(@PathVariable Long id) {
+        if (recomendacaoRepository.existsById(id)) {
+            recomendacaoRepository.deleteById(id);
+            return ResponseEntity.ok("Recomendação removida com sucesso.");
+        } else {
+            return ResponseEntity.status(404).body("Recomendação não encontrada.");
         }
-
-        // Remove a recomendação do banco
-        await recomendacao.destroy();
-        res.json({ mensagem: 'Recomendação deletada com sucesso' });
-    } catch (error) {
-        res.status(500).json({ mensagem: 'Erro ao deletar recomendação', erro: error.message });
     }
-};
-
-// Exporta todas as funções para uso nas rotas
-module.exports = {
-    listarRecomendacoes,
-    buscarRecomendacao,
-    criarRecomendacao,
-    atualizarRecomendacao,
-    deletarRecomendacao
-};
+}
