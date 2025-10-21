@@ -1,3 +1,5 @@
+package model;
+
 /*
 MODELO: Empresa
 
@@ -15,6 +17,7 @@ Relacionamentos:
 - Uma empresa pode ter vários canais de mídia social
 - Uma empresa pode ter várias recomendações
 */
+
 const Empresa = sequelize.define('Empresa', {
     // Número único de identificação da empresa
     cnpj: {
