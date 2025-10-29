@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Ensure required directories exist
-const requiredDirs = ['data', 'sprint02'];
+const requiredDirs = ['data', 'output'];
 requiredDirs.forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -17,11 +17,11 @@ const PORT = 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'frontend/public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Arquivos de dados
 const UNIFIED_DB_FILE = path.join(__dirname, 'data/unified_db.json');
-const SPRINT02_EMPRESAS_FILE = path.join(__dirname, 'sprint02/empresas.json');
+const SPRINT02_EMPRESAS_FILE = path.join(__dirname, 'output/empresas.json');
 const APROVADOS_DB_FILE = path.join(__dirname, 'data/aprovados_db.json');
 const REJEITADOS_DB_FILE = path.join(__dirname, 'data/rejeitados_db.json');
 const PENDENTES_DB_FILE = path.join(__dirname, 'data/pendentes_db.json');
@@ -40,7 +40,7 @@ function saveUnifiedDB(data) {
   fs.writeFileSync(UNIFIED_DB_FILE, JSON.stringify(data, null, 2));
 }
 
-// Função para carregar empresas do sprint02
+// Função para carregar empresas do output
 function loadSprint02Empresas() {
   if (fs.existsSync(SPRINT02_EMPRESAS_FILE)) {
     const content = fs.readFileSync(SPRINT02_EMPRESAS_FILE, 'utf8');
@@ -49,7 +49,7 @@ function loadSprint02Empresas() {
   return [];
 }
 
-// Função para salvar empresas no sprint02
+// Função para salvar empresas no output
 function saveSprint02Empresas(empresas) {
   fs.writeFileSync(SPRINT02_EMPRESAS_FILE, JSON.stringify(empresas, null, 2));
 }
@@ -95,7 +95,7 @@ function savePendentes(empresas) {
 // Função para sincronizar arquivos por status
 function syncStatusFiles() {
   const db = loadUnifiedDB();
-  const sprint02Empresas = loadSprint02Empresas();
+  const outputEmpresas = loadSprint02Empresas();
 
   // Criar um mapa para evitar duplicatas por ID
   const empresasMap = new Map();
@@ -105,8 +105,8 @@ function syncStatusFiles() {
     empresasMap.set(empresa.id.toString(), empresa);
   });
 
-  // Adicionar empresas do sprint02, sem sobrescrever se já existir
-  sprint02Empresas.forEach(empresa => {
+  // Adicionar empresas do output, sem sobrescrever se já existir
+  outputEmpresas.forEach(empresa => {
     if (!empresasMap.has(empresa.id.toString())) {
       empresasMap.set(empresa.id.toString(), empresa);
     }
@@ -142,13 +142,13 @@ function requireAuth(req, res, next) {
 
 // Rota principal
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/public/index.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // Rota para todas as empresas da base unificada
 app.get('/api/empresas', (req, res) => {
   const db = loadUnifiedDB();
-  const sprint02Empresas = loadSprint02Empresas();
+  const outputEmpresas = loadSprint02Empresas();
 
   // Criar um mapa para evitar duplicatas por ID
   const empresasMap = new Map();
@@ -158,8 +158,8 @@ app.get('/api/empresas', (req, res) => {
     empresasMap.set(empresa.id.toString(), empresa);
   });
 
-  // Adicionar empresas do sprint02, sem sobrescrever se já existir
-  sprint02Empresas.forEach(empresa => {
+  // Adicionar empresas do output, sem sobrescrever se já existir
+  outputEmpresas.forEach(empresa => {
     if (!empresasMap.has(empresa.id.toString())) {
       empresasMap.set(empresa.id.toString(), empresa);
     }
@@ -209,7 +209,7 @@ app.get('/api/avaliacoes', (req, res) => {
 
 // === ROTAS DO SPRINT02 (COMPATIBILIDADE) ===
 
-// Cadastrar nova empresa (sprint02 format)
+// Cadastrar nova empresa (output format)
 app.post('/admin/cadastro', (req, res) => {
   const novaEmpresa = req.body;
 
@@ -218,7 +218,7 @@ app.post('/admin/cadastro', (req, res) => {
   novaEmpresa.status = 'pendente';
   novaEmpresa.dataCadastro = new Date().toISOString();
 
-  // Salvar apenas no formato sprint02 para evitar duplicação
+  // Salvar apenas no formato output para evitar duplicação
   const empresasSprint02 = loadSprint02Empresas();
   empresasSprint02.push(novaEmpresa);
   saveSprint02Empresas(empresasSprint02);
@@ -230,13 +230,13 @@ app.post('/admin/cadastro', (req, res) => {
   res.status(200).json({ mensagem: "Cadastro salvo com sucesso!", id: novaEmpresa.id });
 });
 
-// Rota para consultar todas empresas (sprint02)
+// Rota para consultar todas empresas (output)
 app.get('/admin/empresas', (req, res) => {
   const empresas = loadSprint02Empresas();
   res.json(empresas);
 });
 
-// Rota para obter empresas por usuário (sprint02 - mantida para compatibilidade)
+// Rota para obter empresas por usuário (output - mantida para compatibilidade)
 app.get('/admin/ultima-empresa', (req, res) => {
   const email = req.query.email;
   const empresas = loadSprint02Empresas();
@@ -262,7 +262,7 @@ app.get('/admin/ultima-empresa', (req, res) => {
   res.json(empresaEncontrada);
 });
 
-// Rota para obter uma empresa específica por ID (sprint02)
+// Rota para obter uma empresa específica por ID (output)
 app.get('/admin/empresa/:id', (req, res) => {
   const empresas = loadSprint02Empresas();
   const empresa = empresas.find(e => e.id == req.params.id);
@@ -314,12 +314,12 @@ app.put('/api/empresas/:id/status', (req, res) => {
     saveUnifiedDB(db);
   }
 
-  // Atualizar no sprint02
+  // Atualizar no output
   const empresasSprint02 = loadSprint02Empresas();
-  const sprint02Index = empresasSprint02.findIndex(e => e.id == id);
+  const outputIndex = empresasSprint02.findIndex(e => e.id == id);
 
-  if (sprint02Index !== -1) {
-    empresasSprint02[sprint02Index].status = status;
+  if (outputIndex !== -1) {
+    empresasSprint02[outputIndex].status = status;
     saveSprint02Empresas(empresasSprint02);
   }
 
@@ -333,7 +333,7 @@ app.put('/api/empresas/:id/status', (req, res) => {
 app.get('/api/empresas/usuario/:email', (req, res) => {
   const { email } = req.params;
   const db = loadUnifiedDB();
-  const sprint02Empresas = loadSprint02Empresas();
+  const outputEmpresas = loadSprint02Empresas();
 
   // Criar um mapa para evitar duplicatas por ID
   const empresasMap = new Map();
@@ -343,7 +343,7 @@ app.get('/api/empresas/usuario/:email', (req, res) => {
     e.responsavel?.email === email || e.responsavelEmail === email
   );
 
-  const empresasSprint02Filtradas = sprint02Empresas.filter(e => 
+  const empresasSprint02Filtradas = outputEmpresas.filter(e => 
     e.responsavelEmail === email
   );
 
@@ -544,7 +544,7 @@ function updateStatusFiles() {
 app.get('/api/empresas/usuario/:email', (req, res) => {
     const { email } = req.params;
     const db = loadUnifiedDB();
-    const sprint02Empresas = loadSprint02Empresas();
+    const outputEmpresas = loadSprint02Empresas();
 
     // Criar um mapa para evitar duplicatas por ID
     const empresasMap = new Map();
@@ -554,7 +554,7 @@ app.get('/api/empresas/usuario/:email', (req, res) => {
       e.responsavel?.email === email || e.responsavelEmail === email
     );
   
-    const empresasSprint02Filtradas = sprint02Empresas.filter(e => 
+    const empresasSprint02Filtradas = outputEmpresas.filter(e => 
       e.responsavelEmail === email
     );
   
@@ -598,12 +598,12 @@ app.put('/api/empresas/:id', (req, res) => {
         db.empresas[empresaIndex] = { ...db.empresas[empresaIndex], ...dadosAtualizados };
         saveUnifiedDB(db);
   
-        // Atualizar no sprint02
+        // Atualizar no output
         const empresasSprint02 = loadSprint02Empresas();
-        const sprint02Index = empresasSprint02.findIndex(e => e.id == id);
+        const outputIndex = empresasSprint02.findIndex(e => e.id == id);
   
-        if (sprint02Index !== -1) {
-            empresasSprint02[sprint02Index] = { ...empresasSprint02[sprint02Index], ...dadosAtualizados };
+        if (outputIndex !== -1) {
+            empresasSprint02[outputIndex] = { ...empresasSprint02[outputIndex], ...dadosAtualizados };
             saveSprint02Empresas(empresasSprint02);
         }
   
@@ -631,12 +631,12 @@ app.delete('/api/empresas/:id', (req, res) => {
             saveUnifiedDB(db);
         }
   
-        // Remover do sprint02
+        // Remover do output
         const empresasSprint02 = loadSprint02Empresas();
-        const sprint02Index = empresasSprint02.findIndex(e => e.id == id);
+        const outputIndex = empresasSprint02.findIndex(e => e.id == id);
   
-        if (sprint02Index !== -1) {
-            empresasSprint02.splice(sprint02Index, 1);
+        if (outputIndex !== -1) {
+            empresasSprint02.splice(outputIndex, 1);
             saveSprint02Empresas(empresasSprint02);
         }
   

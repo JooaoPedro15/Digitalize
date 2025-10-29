@@ -80,4 +80,90 @@ public class PostDAO
         }
         return out;
     }
+
+
+public boolean insert(Post x) throws SQLException
+{
+    upsert(x);
+    return true;
+}
+
+public boolean update(Post x) throws SQLException
+{
+    upsert(x);
+    return true;
+}
+
+public boolean remove(long canal_id, java.time.LocalDateTime data_hora, String legenda) throws SQLException
+{
+    String sql = "DELETE FROM midiasocial.post WHERE canal_id=? AND data_hora=? AND legenda=?";
+    try (Connection conn = DAO.getConnection(); PreparedStatement ps = conn.prepareStatement(sql))
+    {
+        ps.setLong(1, canal_id);
+        ps.setTimestamp(2, java.sql.Timestamp.valueOf(data_hora));
+        ps.setString(3, legenda);
+        return ps.executeUpdate() > 0;
+    }
+}
+
+public Post get(long canal_id, java.time.LocalDateTime data_hora, String legenda) throws SQLException
+{
+    String sql = "SELECT canal_id, data_hora, legenda, duracao, alcance, views, likes, shares, comentarios, saves, imp_arquivo_original, imp_periodo_inicio FROM midiasocial.post WHERE canal_id=? AND data_hora=? AND legenda=?";
+    try (Connection conn = DAO.getConnection(); PreparedStatement ps = conn.prepareStatement(sql))
+    {
+        ps.setLong(1, canal_id);
+        ps.setTimestamp(2, java.sql.Timestamp.valueOf(data_hora));
+        ps.setString(3, legenda);
+        try (ResultSet rs = ps.executeQuery())
+        {
+            if (rs.next())
+            {
+                Post p = new Post();
+                p.setCanal_id(rs.getLong("canal_id"));
+                p.setData_hora(rs.getTimestamp("data_hora").toLocalDateTime());
+                p.setLegenda(rs.getString("legenda"));
+                p.setDuracao(rs.getInt("duracao"));
+                p.setAlcance(rs.getInt("alcance"));
+                p.setViews(rs.getInt("views"));
+                p.setLikes(rs.getInt("likes"));
+                p.setShares(rs.getInt("shares"));
+                p.setComentarios(rs.getInt("comentarios"));
+                p.setSaves(rs.getInt("saves"));
+                p.setImp_arquivo_original(rs.getString("imp_arquivo_original"));
+                java.sql.Date d = rs.getDate("imp_periodo_inicio");
+                p.setImp_periodo_inicio(d != null ? d.toLocalDate() : null);
+                return p;
+            }
+        }
+    }
+    return null;
+}
+
+public List<Post> listar() throws SQLException
+{
+    List<Post> out = new ArrayList<>();
+    String sql = "SELECT canal_id, data_hora, legenda, duracao, alcance, views, likes, shares, comentarios, saves, imp_arquivo_original, imp_periodo_inicio FROM midiasocial.post ORDER BY canal_id, data_hora";
+    try (Connection conn = DAO.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery())
+    {
+        while (rs.next())
+        {
+            Post p = new Post();
+            p.setCanal_id(rs.getLong("canal_id"));
+            p.setData_hora(rs.getTimestamp("data_hora").toLocalDateTime());
+            p.setLegenda(rs.getString("legenda"));
+            p.setDuracao(rs.getInt("duracao"));
+            p.setAlcance(rs.getInt("alcance"));
+            p.setViews(rs.getInt("views"));
+            p.setLikes(rs.getInt("likes"));
+            p.setShares(rs.getInt("shares"));
+            p.setComentarios(rs.getInt("comentarios"));
+            p.setSaves(rs.getInt("saves"));
+            p.setImp_arquivo_original(rs.getString("imp_arquivo_original"));
+            java.sql.Date d = rs.getDate("imp_periodo_inicio");
+            p.setImp_periodo_inicio(d != null ? d.toLocalDate() : null);
+            out.add(p);
+        }
+    }
+    return out;
+}
 }
