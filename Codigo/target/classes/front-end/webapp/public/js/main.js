@@ -2384,7 +2384,33 @@ class DigitalizeApp {
     }
 }
 
-// Inicializar aplicação quando DOM estiver pronto
-document.addEventListener('DOMContentLoaded', function() {
-    window.digitalizeApp = new DigitalizeApp();
+// Espera o carregamento da página antes de fazer requisições
+document.addEventListener("DOMContentLoaded", () => {
+
+    console.log("Front-end carregado. Testando integração com o backend...");
+
+    // Faz uma requisição GET para o backend (Spark Java)
+    fetch("http://localhost:4567/canais")
+        .then(res => res.json())              // Converte a resposta em JSON
+        .then(data => {
+            console.log("Dados recebidos do backend:", data); // Exibe no console
+
+            // Exemplo simples: mostra os canais na página principal
+            const main = document.getElementById("main-content");
+            main.innerHTML = "<h2>Lista de Canais</h2>";
+
+            data.forEach(canal => {
+                main.innerHTML += `
+                    <div class="canal-item">
+                        <p><strong>Plataforma:</strong> ${canal.plataforma}</p>
+                        <p><strong>Identificador:</strong> ${canal.canal_identificador}</p>
+                        <hr>
+                    </div>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error("Erro ao buscar canais:", err);
+            alert("Não foi possível conectar ao servidor.");
+        });
 });
