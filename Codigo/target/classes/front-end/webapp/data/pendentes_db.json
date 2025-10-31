@@ -1,0 +1,25 @@
+[
+  {
+    "nomeFantasia": "Outra Empresa",
+    "razaoSocial": "Outra Empresa LTDA",
+    "cnpj": "33.333.333/3333-33",
+    "segmento": "Comércio",
+    "responsavelNome": "Rafael R2",
+    "responsavelCargo": "presidente",
+    "responsavelEmail": "rafael2@email.com",
+    "responsavelTelefone": "(31) 98989-4364",
+    "servicosInteresse": [
+      "sistema"
+    ],
+    "observacoes": "teste de numero3",
+    "endereco": {
+      "cep": "30644-290",
+      "rua": "Rua dos Filmes",
+      "cidade": "BELO HORIZONTE",
+      "estado": "MG"
+    },
+    "id": 1750388109328,
+    "status": "pendente",
+    "dataCadastro": "2025-06-20T02:55:09.328Z"
+  }
+]

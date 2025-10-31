@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Importação de CSV — Digitalize</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <style>
+      :root { --ink:#111; --muted:#6b7280; --card:#ffffff; --bg:#f8fafc; }
+      body{ background:var(--bg); }
+      .page { max-width: 1200px; margin: 24px auto; padding: 0 12px; }
+      .card { border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 4px 16px rgba(0,0,0,.04); }
+      .card-header { border-bottom: 1px solid #e5e7eb; background: white; }
+      .help { color: var(--muted); font-size: .9rem; }
+      .pill { background:#f1f5f9; border-radius:999px; padding:.25rem .6rem; font-size:.8rem; }
+      .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .grid-2 { display:grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      @media (max-width: 992px){ .grid-3{grid-template-columns:1fr;} .grid-2{grid-template-columns:1fr;} }
+      .metric h3{ font-size: .95rem; color:var(--muted); margin-bottom:6px; }
+      .metric .value{ font-weight:700; font-size:1.4rem; }
+      .table-sm td, .table-sm th { padding:.4rem .6rem; }
+      .sticky-footer{ position:sticky; bottom:0; background:white; border-top:1px solid #e5e7eb; padding:12px; display:flex; gap:8px; justify-content:flex-end; }
+      /* Print to one page (A4 portrait) */
+      @media print{
+        @page{ size: A4 portrait; margin: 12mm; }
+        .no-print{ display:none !important; }
+        body{ background:white; }
+        .card{ box-shadow:none; border:none; }
+        .page{ max-width: none; margin:0; padding:0; }
+      }
+      .mapping-select{ min-width: 220px; }
+      .badge-ok{ background:#e3f9e5; color:#037a48; border:1px solid #a8e6b0; }
+      .badge-warn{ background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <img src="img/logo.png" height="36" alt="Digitalize logo" />
+          <div>
+            <h1 class="h4 mb-0">Importação de CSV</h1>
+            <div class="help">Envie o CSV do seu canal e veja o resumo com métricas, top horários e top posts.</div>
+          </div>
+        </div>
+        <div class="no-print">
+          <a href="index.html" class="btn btn-outline-secondary"><i class="fa fa-arrow-left me-2"></i>Voltar</a>
+        </div>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>1) Enviar arquivo</strong>
+          <span id="fileInfo" class="pill">Nenhum arquivo</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-3 align-items-center">
+            <div class="col-md-6">
+              <input id="csvFile" type="file" accept=".csv,text/csv" class="form-control" />
+              <div class="help mt-2">Aceita .csv com cabeçalho. Tamanho máximo: 20&nbsp;MB.</div>
+            </div>
+            <div class="col-md-6 no-print">
+              <button id="btnParse" class="btn btn-primary"><i class="fa fa-file-import me-2"></i>Ler CSV</button>
+              <button id="btnDemo" class="btn btn-outline-secondary ms-2"><i class="fa fa-magic me-2"></i>Usar demo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Mapping -->
+      <div id="mapCard" class="card mb-3" style="display:none;">
+        <div class="card-header"><strong>2) Mapear colunas</strong></div>
+        <div class="card-body">
+          <div class="help mb-3">Selecione quais colunas do CSV correspondem a cada campo. Detectamos automaticamente quando possível.</div>
+          <div id="mapping" class="grid-3"></div>
+          <div class="mt-3">
+            <span class="badge badge-ok me-2">Obrigatório</span>
+            <span class="badge badge-warn">Opcional</span>
+          </div>
+        </div>
+        <div class="sticky-footer no-print">
+          <button id="btnAplicarMap" class="btn btn-success"><i class="fa fa-check me-2"></i>Aplicar mapeamento</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Resultados -->
+      <div id="resCard" class="card mb-3" style="display:none;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>3) Resultados</strong>
+          <div class="no-print">
+            <button id="btnPrint" class="btn btn-outline-dark"><i class="fa fa-file-pdf me-2"></i>Imprimir PDF (1 página)</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Resumo -->
+          <div class="grid-3 mb-4">
+            <div class="metric">
+              <h3>Total de posts</h3>
+              <div id="m_posts" class="value">—</div>
+              <div id="m_periodo" class="help">—</div>
+            </div>
+            <div class="metric">
+              <h3>Interações totais</h3>
+              <div id="m_interacoes" class="value">—</div>
+              <div class="help">Likes + Comentários + Compartilhamentos + Saves</div>
+            </div>
+            <div class="metric">
+              <h3>Taxa de engajamento</h3>
+              <div id="m_er" class="value">—</div>
+              <div class="help">Por alcance e por impressões</div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-lg-6">
+              <div class="p-3 border rounded h-100">
+                <h5 class="mb-3">Top 3 horários</h5>
+                <ol id="lista_horarios" class="mb-0"></ol>
+                <div class="help mt-2">Baseado na média de interações por post em cada hora do dia.</div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="p-3 border rounded h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="mb-0">Top 3 posts</h5>
+                  <select id="rankMode" class="form-select form-select-sm" style="width:auto;">
+                    <option value="abs">Por interações</option>
+                    <option value="rate">Por taxa (interações / impressões)</option>
+                  </select>
+                </div>
+                <ol id="lista_posts" class="mb-0"></ol>
+                <div class="help mt-2">Use o seletor para alternar a forma de ranqueamento.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="mt-4">
+            <h5 class="mb-2">Prévia dos dados</h5>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle">
+                <thead id="thead"></thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="importacao.js"></script>
+  </body>
+</html>

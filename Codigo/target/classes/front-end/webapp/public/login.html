@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digitalize - Login</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div id="login">
+    <div class="container">
+      <div id="login-row" class="row justify-content-center align-items-center">
+        <div id="login-column" class="col-md-6">
+          <div id="login-box" class="col-md-12">
+            <div style="text-align: center; margin-bottom: 2rem;">
+              <div style="width: 80px; height: 80px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <svg width="40" height="40" fill="white" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+              <h3 style="font-family: var(--font-heading); font-size: 1.75rem; font-weight: 600; color: var(--gray-800); margin-bottom: 0.5rem;">Bem-vindo de volta!</h3>
+              <p style="color: var(--gray-600); margin-bottom: 0;">Faça login para acessar sua conta</p>
+            </div>
+            
+            <form id="login-form" class="form" method="post">
+              <div class="form-group">
+                <label for="username">Email</label>
+                <input type="email" name="username" id="username" class="form-control" placeholder="seu@email.com" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
+              </div>
+              <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <input type="checkbox" style="margin: 0;">
+                  <span style="font-size: 0.875rem; color: var(--gray-600);">Lembrar-me</span>
+                </label>
+                <a href="#" style="font-size: 0.875rem; color: var(--primary-color); text-decoration: none;">Esqueceu a senha?</a>
+              </div>
+              <div class="form-group text-center">
+                <input type="submit" name="submit" class="btn btn-primary" value="Entrar" style="width: 100%; margin-bottom: 1rem;"> 
+                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#loginModal" style="width: 100%; background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300);">Criar nova conta</button>
+              </div>
+            </form>
+            
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
+              <a href="/" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">← Voltar ao site</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Registro -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="loginModalLabel">
+            <svg width="24" height="24" fill="white" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>
+            Criar Nova Conta
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="background: none; border: none; color: white; font-size: 1.5rem;">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <p style="color: var(--gray-600);">Preencha os dados abaixo para criar sua conta</p>
+          </div>
+          <div id="login-box" class="col-md-12">
+            <form id="register-form" class="form" method="post">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label for="txt_nome">Nome completo</label>
+                  <input type="text" name="txt_nome" id="txt_nome" class="form-control" placeholder="Seu nome completo" required>
+                </div>
+                <div class="form-group">
+                  <label for="txt_email">Email</label>
+                  <input type="email" name="txt_email" id="txt_email" class="form-control" placeholder="seu@email.com" required>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label for="txt_senha">Senha</label>
+                  <input type="password" name="txt_senha" id="txt_senha" class="form-control" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                  <label for="txt_senha2">Confirmar Senha</label>
+                  <input type="password" name="txt_senha2" id="txt_senha2" class="form-control" placeholder="••••••••" required>
+                </div>
+              </div>
+              <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <input type="checkbox" required>
+                  <span style="font-size: 0.875rem; color: var(--gray-600);">Aceito os <a href="#" style="color: var(--primary-color);">termos de uso</a> e <a href="#" style="color: var(--primary-color);">política de privacidade</a></span>
+                </label>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" data-bs-dismiss="modal" style="background: var(--gray-100); color: var(--gray-700);">Cancelar</button>
+          <button type="button" id="btn_salvar" class="btn btn-primary">Criar Conta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+
+    // Declara uma função para processar o formulário de login
+    async function processaFormLogin(event) {
+      // Cancela a submissão do formulário para tratar sem fazer refresh da tela
+      event.preventDefault();
+
+      // Obtem os dados de login e senha a partir do formulário de login
+      var email = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
+
+      // Valida login e se estiver ok, redireciona para tela inicial da aplicação
+      const resultado = await authSystem.login(email, password);
+      if (resultado.success) {
+        window.location.href = '/';
+      } else {
+        alert(resultado.message);
+      }
+    }
+
+    async function salvaLogin(event) {
+      // Cancela a submissão do formulário para tratar sem fazer refresh da tela
+      event.preventDefault();
+
+      // Obtem os dados do formulário
+      let nome = document.getElementById('txt_nome').value;
+      let email = document.getElementById('txt_email').value;
+      let senha = document.getElementById('txt_senha').value;
+      let senha2 = document.getElementById('txt_senha2').value;
+      
+      if (senha != senha2) {
+        alert('As senhas informadas não conferem.');
+        return;
+      }
+
+      // Adiciona o usuário no banco de dados
+      const resultado = await authSystem.register({ nome, email, senha });
+      if (resultado.success) {
+        alert('Usuário salvo com sucesso. Proceda com o login.');
+        // Fechar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+        if (modal) modal.hide();
+      } else {
+        alert(resultado.message);
+      }
+    }
+
+    // Associa a funçao processaFormLogin  formulário adicionado um manipulador do evento submit
+    document.getElementById('login-form').addEventListener('submit', processaFormLogin);
+
+    // Associar salvamento ao botao
+    document.getElementById('btn_salvar').addEventListener('click', salvaLogin);        
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>

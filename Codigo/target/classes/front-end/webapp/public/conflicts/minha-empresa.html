@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minha Empresa - Digitalize</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Barra Lateral -->
+      <div class="col-md-3 col-lg-2 d-md-block sidebar">
+        <div class="position-sticky pt-3">
+          <div class="text-center mb-4">
+            <img src="img/logo.png" alt="Logo Digitalize" height="50" />
+            <h5 class="text-white mt-2">Digitalize</h5>
+          </div>
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="minha-empresa.html">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">
+                <i class="fas fa-building"></i> Cadastro de Empresas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#pendentes">
+                <i class="fas fa-clock"></i> Pendentes
+              </a>
+            </li>
+            <li class="nav-item mt-4">
+              <a class="nav-link text-danger" href="minha-empresa.html">
+                <i class="fas fa-sign-in-alt"></i> Sair
+              </a>
+            </li>
+          <li class="nav-item"><a class="nav-link" href="importacao.html"><i class="fa fa-file-import me-2"></i>Importar CSV</a></li></ul>
+        </div>
+      </div>
+
+      <!-- conteudo -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        <div
+          class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Digitalize - Minha Empresa</h1>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card shadow-sm">
+              <div class="card-body p-4 p-md-5">
+                <p class="text-center text-muted mb-4">
+                  Veja os dados da sua empresa! 
+                Para cadastrar uma nova empresa, acesse "Cadastro de Empresas" 
+                no menu lateral.
+                  
+                </p>
+
+                <form id="empresaForm">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Razão Social</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="razaoSocial"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Nome Fantasia</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="nomeFantasia"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">CNPJ</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="cnpj"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Segmento</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="segmento"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Estado</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="estado"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Cidade</label>
+                      <p class="form-control bg-light border rounded py-2 px-3" id="cidade"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Rua</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="rua"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">CEP</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="cep"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Nome do Responsável</label>
+                      <p class="form-control bg-light border rounded py-2 px-3" id="responsavelNome"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Cargo</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="responsavelCargo"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">E-mail</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="responsavelEmail"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label required-field">Telefone</label>
+                      <p class="form-control bg-light border rounded py-2 px-3"  id="responsavelTelefone"></p>
+                    </div>
+
+                    
+<div class="col-12">
+  <label class="form-label d-block">Serviços Solicitados</label>
+
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="servicoSite" name="servicosInteresse" value="site" disabled>
+    <label class="form-check-label" for="servicoSite">Criação de Site</label>
+  </div>
+
+  <div class="form-che  ck form-check-inline">
+    <input class="form-check-input" type="checkbox" id="servicoMarketing" name="servicosInteresse" value="marketing" disabled>
+    <label class="form-check-label" for="servicoMarketing">Marketing Digital</label>
+  </div>
+
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="servicoSEO" name="servicosInteresse" value="seo" disabled>
+    <label class="form-check-label" for="servicoSEO">SEO</label>
+  </div>
+
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="servicoRedes" name="servicosInteresse" value="redes" disabled>
+    <label class="form-check-label" for="servicoRedes">Gestão de Redes Sociais</label>
+  </div>
+
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="servicoSistema" name="servicosInteresse" value="sistema" disabled>
+    <label class="form-check-label" for="servicoSistema">Sistema Personalizado</label>
+  </div>
+</div>
+
+
+
+                    <div class="col-12">
+                      <label for="observacoes" class="form-label">Observações</label>
+                      <textarea class="form-control bg-light border rounded py-2 px-3" id="observacoes" rows="3" disabled></textarea>
+                    </div>
+                  </div>
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="button" id="btn-editar" class="btn btn-primary px-4 me-2">
+                      <i class="fas fa-edit"></i> Editar Informações
+                    </button>
+                    <button type="button" id="btn-excluir" class="btn btn-danger px-4">
+                      <i class="fas fa-trash"></i> Excluir Empresa
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+<!-- Modal de confirmação de exclusão -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1" aria-labelledby="modalConfirmacaoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalConfirmacaoLabel">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir permanentemente os dados da sua empresa?</p>
+        <p class="text-danger"><strong>Esta ação não pode ser desfeita!</strong></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="confirmar-exclusao" class="btn btn-danger">Confirmar Exclusão</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de edição -->
+<div class="modal fade" id="modalEdicao" tabindex="-1" aria-labelledby="modalEdicaoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEdicaoLabel">Editar Informações da Empresa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-edicao">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required-field">Razão Social</label>
+              <input type="text" class="form-control" id="edit-razaoSocial" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Nome Fantasia</label>
+              <input type="text" class="form-control" id="edit-nomeFantasia" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">CNPJ</label>
+              <input type="text" class="form-control" id="edit-cnpj" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Segmento</label>
+              <select class="form-control" id="edit-segmento" required>
+                <option value="">Selecione o segmento</option>
+                <option value="Tecnologia">Tecnologia</option>
+                <option value="Comércio">Comércio</option>
+                <option value="Serviços">Serviços</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Educação">Educação</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Estado</label>
+              <input type="text" class="form-control" id="edit-estado" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Cidade</label>
+              <input type="text" class="form-control" id="edit-cidade" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Rua</label>
+              <input type="text" class="form-control" id="edit-rua" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">CEP</label>
+              <input type="text" class="form-control" id="edit-cep" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Nome do Responsável</label>
+              <input type="text" class="form-control" id="edit-responsavelNome" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Cargo</label>
+              <input type="text" class="form-control" id="edit-responsavelCargo" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">E-mail</label>
+              <input type="email" class="form-control" id="edit-responsavelEmail" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-field">Telefone</label>
+              <input type="text" class="form-control" id="edit-responsavelTelefone" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label d-block">Serviços Solicitados</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="edit-servicoSite" name="servicosInteresse" value="site">
+                <label class="form-check-label" for="edit-servicoSite">Criação de Site</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="edit-servicoMarketing" name="servicosInteresse" value="marketing">
+                <label class="form-check-label" for="edit-servicoMarketing">Marketing Digital</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="edit-servicoSEO" name="servicosInteresse" value="seo">
+                <label class="form-check-label" for="edit-servicoSEO">SEO</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="edit-servicoRedes" name="servicosInteresse" value="redes">
+                <label class="form-check-label" for="edit-servicoRedes">Gestão de Redes Sociais</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="edit-servicoSistema" name="servicosInteresse" value="sistema">
+                <label class="form-check-label" for="edit-servicoSistema">Sistema Personalizado</label>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label for="edit-observacoes" class="form-label">Observações</label>
+              <textarea class="form-control" id="edit-observacoes" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="salvar-edicao" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
+<script src="minha-empresa.js"></script>
+</body>
+
+</html>
