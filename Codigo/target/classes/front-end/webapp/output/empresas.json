@@ -1,0 +1,149 @@
+[
+  {
+    "id": 1749411548996,
+    "razaoSocial": "Empresa Digitalize LTDA",
+    "nomeFantasia": "Sprint - 02",
+    "cnpj": "12.345.671/2345-67",
+    "segmento": "Tecnologia",
+    "endereco": {
+      "estado": "Minas Gerais",
+      "cidade": "Belo Horizonte",
+      "rua": "Rua da PUC",
+      "cep": "12345678"
+    },
+    "responsavelNome": "Rafael Ramaldes Nacif de Oliveira",
+    "responsavelCargo": "Autor da Sprint 02",
+    "responsavelEmail": "rafael.nacif@sga.pucminas.br",
+    "responsavelTelefone": "(31) 99999-9999",
+    "servicosInteresse": [
+      "site",
+      "marketing",
+      "seo",
+      "redes",
+      "sistema"
+    ],
+    "observacoes": "Essa é a minha segunda sprint, exibe os dados da empresa cadastrada. Cadastre uma nova empresa e confira novamente essa pagina.",
+    "status": "aprovada"
+  },
+  {
+    "nomeFantasia": "EMPRESA",
+    "razaoSocial": "EMPRESATESTE",
+    "cnpj": "88.888.888/8888-88",
+    "segmento": "Comércio",
+    "responsavelNome": "RAFAEL RAMALDES ",
+    "responsavelCargo": "CEO",
+    "responsavelEmail": "rafarno10@gmail.com",
+    "responsavelTelefone": "(31) 98989-4364",
+    "servicosInteresse": [
+      "site"
+    ],
+    "observacoes": "knnowieo",
+    "endereco": {
+      "cep": "13112-005",
+      "rua": "Rua que eu moro",
+      "cidade": "BELO HORIZONTE",
+      "estado": "MG"
+    },
+    "id": 1750269979140,
+    "status": "rejeitada",
+    "dataCadastro": "2025-06-18T18:06:19.140Z"
+  },
+  {
+    "nomeFantasia": "AED",
+    "razaoSocial": "Algoritimos e Estruturas de Dados",
+    "cnpj": "33.333.333/3333-333",
+    "segmento": "Tecnologia",
+    "responsavelNome": "Rafael 1",
+    "responsavelCargo": "CEO",
+    "responsavelEmail": "rafael1@email.com",
+    "responsavelTelefone": "(31) 99999-9999",
+    "servicosInteresse": [
+      "marketing",
+      "redes"
+    ],
+    "observacoes": "Essa é uma materia do curso de ciencia da computacao",
+    "endereco": {
+      "cep": "23112-020",
+      "rua": "rua theldo",
+      "cidade": "Ibirité",
+      "estado": "MG"
+    },
+    "id": "1750272508824",
+    "status": "aprovada",
+    "dataCadastro": "2025-06-18T18:48:28.824Z",
+    "dataAtualizacao": "2025-06-22T19:58:59.692Z"
+  },
+  {
+    "nomeFantasia": "Empresa R2",
+    "razaoSocial": "Empresa R2 LTDA",
+    "cnpj": "12.345.671/2345-67",
+    "segmento": "Saúde",
+    "responsavelNome": "Rafael R2",
+    "responsavelCargo": "Dono da Empresa",
+    "responsavelEmail": "rafarno10@gmail.com",
+    "responsavelTelefone": "(31) 98989-4364",
+    "servicosInteresse": [
+      "site"
+    ],
+    "observacoes": "É uma empresa sobre ser a segunda empresa de testes.",
+    "endereco": {
+      "cep": "32424-260",
+      "rua": "Rua do pietrobon",
+      "cidade": "Ibirité",
+      "estado": "MG"
+    },
+    "id": 1750387642675,
+    "status": "aprovada",
+    "dataCadastro": "2025-06-20T02:47:22.675Z"
+  },
+  {
+    "nomeFantasia": "Outra Empresa",
+    "razaoSocial": "Outra Empresa LTDA",
+    "cnpj": "33.333.333/3333-33",
+    "segmento": "Comércio",
+    "responsavelNome": "Rafael R2",
+    "responsavelCargo": "presidente",
+    "responsavelEmail": "rafael2@email.com",
+    "responsavelTelefone": "(31) 98989-4364",
+    "servicosInteresse": [
+      "sistema"
+    ],
+    "observacoes": "teste de numero3",
+    "endereco": {
+      "cep": "30644-290",
+      "rua": "Rua dos Filmes",
+      "cidade": "BELO HORIZONTE",
+      "estado": "MG"
+    },
+    "id": 1750388109328,
+    "status": "pendente",
+    "dataCadastro": "2025-06-20T02:55:09.328Z"
+  },
+  {
+    "nomeFantasia": "Roberto Careca Inc",
+    "razaoSocial": "Roberto Careca Inc",
+    "cnpj": "12345678",
+    "segmento": "Tecnologia",
+    "responsavelNome": "João Pedro Costa e Silva",
+    "responsavelCargo": "CEO ",
+    "responsavelEmail": "122343@gmail",
+    "responsavelTelefone": "(31) 99395-2444",
+    "servicosInteresse": [
+      "site",
+      "marketing",
+      "seo",
+      "redes",
+      "sistema"
+    ],
+    "observacoes": "",
+    "endereco": {
+      "cep": "32042-130",
+      "rua": "Rua montes claros 645",
+      "cidade": "Contagem",
+      "estado": "MG"
+    },
+    "id": 1750554106100,
+    "status": "aprovada",
+    "dataCadastro": "2025-06-22T01:01:46.100Z"
+  }
+]

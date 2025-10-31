@@ -1,0 +1,27 @@
+[
+  {
+    "id": "1750269979140",
+    "nomeFantasia": "EMPRESA",
+    "razaoSocial": "EMPRESATESTE",
+    "cnpj": "88.888.888/8888-88",
+    "segmento": "Comércio",
+    "endereco": {
+      "cep": "13112-005",
+      "logradouro": "Rua que eu moro",
+      "cidade": "BELO HORIZONTE",
+      "estado": "MG"
+    },
+    "responsavel": {
+      "nome": "RAFAEL RAMALDES ",
+      "email": "rafarno10@gmail.com",
+      "telefone": "(31) 98989-4364",
+      "cargo": "CEO"
+    },
+    "servicosInteresse": [
+      "site"
+    ],
+    "observacoes": "knnowieo",
+    "status": "rejeitada",
+    "dataCadastro": "2025-06-18T18:06:19.140Z"
+  }
+]
