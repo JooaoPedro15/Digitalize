@@ -2411,6 +2411,6 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(err => {
             console.error("Erro ao buscar canais:", err);
-            alert("Não foi possível conectar ao servidor backend.");
+            alert("Não foi possível conectar ao servidor.");
         });
 });
