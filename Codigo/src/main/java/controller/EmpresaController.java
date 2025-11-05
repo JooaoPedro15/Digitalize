@@ -10,46 +10,69 @@ import model.Empresa;
  * Define endpoints REST para listar, criar, atualizar e remover empresas.
  */
 public class EmpresaController {
-    private EmpresaService service = new EmpresaService();
-    private Gson gson = new Gson();
+    private final EmpresaService service = new EmpresaService();
+    private final Gson gson = new Gson();
 
     public EmpresaController() {
         // Lista todas as empresas
-        get("/empresas", (req, res) -> gson.toJson(service.listarEmpresas()));
-
-        // Cria uma nova empresa
-        post("/empresas", (req, res) -> {
-            Empresa emp = gson.fromJson(req.body(), Empresa.class);
-            service.criarEmpresa(emp);
-            res.status(201);
-            return "Empresa criada com sucesso";
+        get("/empresas", (req, res) -> {
+            res.type("application/json");
+            return gson.toJson(service.listar());
         });
 
         // Busca uma empresa pelo CNPJ
         get("/empresas/:cnpj", (req, res) -> {
+            res.type("application/json");
             String cnpj = req.params(":cnpj");
-            Empresa emp = service.buscarEmpresa(cnpj);
+            Empresa emp = service.get(cnpj);
             if (emp != null) {
                 return gson.toJson(emp);
             } else {
                 res.status(404);
-                return "Empresa não encontrada";
+                return gson.toJson("Empresa não encontrada");
+            }
+        });
+
+        // Cria uma nova empresa
+        post("/empresas", (req, res) -> {
+            res.type("application/json");
+            Empresa emp = gson.fromJson(req.body(), Empresa.class);
+            boolean inserido = service.insert(emp);
+            if (inserido) {
+                res.status(201);
+                return gson.toJson("Empresa criada com sucesso");
+            } else {
+                res.status(400);
+                return gson.toJson("Erro ao criar empresa");
             }
         });
 
         // Atualiza uma empresa existente
         put("/empresas/:cnpj", (req, res) -> {
+            res.type("application/json");
             String cnpj = req.params(":cnpj");
             Empresa emp = gson.fromJson(req.body(), Empresa.class);
-            service.atualizarEmpresa(cnpj, emp);
-            return "Empresa atualizada com sucesso";
+            emp.setCnpj(cnpj); // garante que o CNPJ está correto
+            boolean atualizado = service.update(emp);
+            if (atualizado) {
+                return gson.toJson("Empresa atualizada com sucesso");
+            } else {
+                res.status(404);
+                return gson.toJson("Empresa não encontrada");
+            }
         });
 
         // Remove uma empresa
         delete("/empresas/:cnpj", (req, res) -> {
+            res.type("application/json");
             String cnpj = req.params(":cnpj");
-            service.removerEmpresa(cnpj);
-            return "Empresa removida com sucesso";
+            boolean removido = service.remove(cnpj);
+            if (removido) {
+                return gson.toJson("Empresa removida com sucesso");
+            } else {
+                res.status(404);
+                return gson.toJson("Empresa não encontrada");
+            }
         });
     }
 }

@@ -5,54 +5,114 @@ import com.google.gson.Gson;
 import service.PostService;
 import model.Post;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Controlador responsável pelas rotas da entidade Post.
- * Define endpoints REST para criar, atualizar, listar e remover postagens
- * vinculadas a canais de empresas.
+ * Define endpoints REST para listar, criar, atualizar e remover postagens.
  */
 public class PostController {
-    private PostService service = new PostService();
-    private Gson gson = new Gson();
+    private final PostService service = new PostService();
+    private final Gson gson = new Gson();
 
     public PostController() {
-        // Cria (ou atualiza) um post — similar ao comportamento de "upsert"
-        post("/posts", (req, res) -> {
-            Post p = gson.fromJson(req.body(), Post.class);
-            service.salvarOuAtualizar(p);
-            res.status(201);
-            return "{\"ok\":true}";
+        // Lista todos os posts
+        get("/posts", (req, res) -> {
+            res.type("application/json");
+            try {
+                return gson.toJson(service.listar());
+            } catch (Exception e) {
+                res.status(500);
+                return gson.toJson("Erro ao listar posts: " + e.getMessage());
+            }
         });
 
-        // Lista posts de um canal dentro de um intervalo de datas
-        get("/posts/:canalId", (req, res) -> {
-            long canalId = Long.parseLong(req.params(":canalId"));
+        // Busca um post específico pela chave composta
+        get("/posts/:canal_id/:data_hora/:legenda", (req, res) -> {
+            res.type("application/json");
+            try {
+                long canalId = Long.parseLong(req.params(":canal_id"));
+                LocalDateTime dataHora = LocalDateTime.parse(req.params(":data_hora"));
+                String legenda = req.params(":legenda");
 
-            // parâmetros: ?start=2025-01-01&end=2025-01-31
-            LocalDate start = req.queryParams("start") != null
-                    ? LocalDate.parse(req.queryParams("start"))
-                    : null;
-            LocalDate end = req.queryParams("end") != null
-                    ? LocalDate.parse(req.queryParams("end"))
-                    : null;
+                Post post = service.get(canalId, dataHora, legenda);
+                if (post != null) {
+                    return gson.toJson(post);
+                } else {
+                    res.status(404);
+                    return gson.toJson("Post não encontrado");
+                }
+            } catch (Exception e) {
+                res.status(400);
+                return gson.toJson("Parâmetros inválidos ou erro: " + e.getMessage());
+            }
+        });
 
-            return gson.toJson(service.listarPorCanal(canalId, start, end));
+        // Cria um novo post
+        post("/posts", (req, res) -> {
+            res.type("application/json");
+            try {
+                Post post = gson.fromJson(req.body(), Post.class);
+                boolean inserido = service.insert(post);
+                if (inserido) {
+                    res.status(201);
+                    return gson.toJson("Post criado com sucesso");
+                } else {
+                    res.status(400);
+                    return gson.toJson("Erro ao criar post");
+                }
+            } catch (Exception e) {
+                res.status(500);
+                return gson.toJson("Erro ao criar post: " + e.getMessage());
+            }
         });
 
         // Atualiza um post existente
-        put("/posts/:id", (req, res) -> {
-            long id = Long.parseLong(req.params(":id"));
-            Post p = gson.fromJson(req.body(), Post.class);
-            service.atualizarPost(id, p);
-            return "Post atualizado com sucesso";
+        put("/posts/:canal_id/:data_hora/:legenda", (req, res) -> {
+            res.type("application/json");
+            try {
+                long canalId = Long.parseLong(req.params(":canal_id"));
+                LocalDateTime dataHora = LocalDateTime.parse(req.params(":data_hora"));
+                String legenda = req.params(":legenda");
+
+                Post post = gson.fromJson(req.body(), Post.class);
+                // Garante que os campos-chave estão corretos
+                post.setCanalId(canalId);
+                post.setDataHora(dataHora);
+                post.setLegenda(legenda);
+
+                boolean atualizado = service.update(post);
+                if (atualizado) {
+                    return gson.toJson("Post atualizado com sucesso");
+                } else {
+                    res.status(404);
+                    return gson.toJson("Post não encontrado");
+                }
+            } catch (Exception e) {
+                res.status(400);
+                return gson.toJson("Erro ao atualizar post: " + e.getMessage());
+            }
         });
 
         // Remove um post
-        delete("/posts/:id", (req, res) -> {
-            long id = Long.parseLong(req.params(":id"));
-            service.removerPost(id);
-            return "Post removido com sucesso";
+        delete("/posts/:canal_id/:data_hora/:legenda", (req, res) -> {
+            res.type("application/json");
+            try {
+                long canalId = Long.parseLong(req.params(":canal_id"));
+                LocalDateTime dataHora = LocalDateTime.parse(req.params(":data_hora"));
+                String legenda = req.params(":legenda");
+
+                boolean removido = service.remove(canalId, dataHora, legenda);
+                if (removido) {
+                    return gson.toJson("Post removido com sucesso");
+                } else {
+                    res.status(404);
+                    return gson.toJson("Post não encontrado");
+                }
+            } catch (Exception e) {
+                res.status(400);
+                return gson.toJson("Erro ao remover post: " + e.getMessage());
+            }
         });
     }
 }
