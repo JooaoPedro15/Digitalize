@@ -1,30 +1,50 @@
-package controller;
+package com.controller;
 
 import static spark.Spark.*;
+
 import com.google.gson.Gson;
-import service.CanalService;
-import model.Canal;
+import com.service.CanalService;
+import com.model.Canal;
 
 /**
- * Controlador responsável pelas rotas da entidade Canal.
- * Define endpoints REST para CRUD de canais.
+ * Controlador responsável por expor as rotas REST referentes à entidade Canal.
+ *
+ * Este controlador integra a camada de serviço ao servidor HTTP (Spark),
+ * definindo endpoints para as operações CRUD.
+ *
+ * Convenções aplicadas:
+ *  - Todas as respostas são enviadas em JSON.
+ *  - Código HTTP correto para cada situação (200, 201, 404).
+ *  - Conversão de objetos ↔ JSON via Gson.
+ *
+ * Observação:
+ * A inicialização das rotas acontece automaticamente no construtor,
+ * pois a classe é instanciada dentro de Routes.java.
  */
 public class CanalController {
+
     private final CanalService service = new CanalService();
     private final Gson gson = new Gson();
 
     public CanalController() {
-        // Lista todos os canais
+
+        // -------------------------
+        // LISTAR TODOS OS CANAIS
+        // -------------------------
         get("/canais", (req, res) -> {
             res.type("application/json");
             return gson.toJson(service.listar());
         });
 
-        // Busca um canal pelo ID
+        // -------------------------
+        // BUSCAR CANAL POR ID
+        // -------------------------
         get("/canais/:id", (req, res) -> {
             res.type("application/json");
+
             long id = Long.parseLong(req.params(":id"));
             Canal canal = service.get(id);
+
             if (canal != null) {
                 return gson.toJson(canal);
             } else {
@@ -33,22 +53,32 @@ public class CanalController {
             }
         });
 
-        // Cria um novo canal
+        // -------------------------
+        // CRIAR UM NOVO CANAL
+        // -------------------------
         post("/canais", (req, res) -> {
             res.type("application/json");
+
             Canal canal = gson.fromJson(req.body(), Canal.class);
             long id = service.insert(canal);
+
             res.status(201);
             return gson.toJson("Canal criado com sucesso. ID: " + id);
         });
 
-        // Atualiza um canal existente
+        // -------------------------
+        // ATUALIZAR CANAL EXISTENTE
+        // -------------------------
         put("/canais/:id", (req, res) -> {
             res.type("application/json");
+
             long id = Long.parseLong(req.params(":id"));
             Canal canal = gson.fromJson(req.body(), Canal.class);
-            canal.setId(id); // garante que o ID está correto
+
+            canal.setId(id); // garante vinculação correta do recurso
+
             boolean atualizado = service.update(canal);
+
             if (atualizado) {
                 return gson.toJson("Canal atualizado com sucesso");
             } else {
@@ -57,11 +87,15 @@ public class CanalController {
             }
         });
 
-        // Remove um canal
+        // -------------------------
+        // REMOVER UM CANAL
+        // -------------------------
         delete("/canais/:id", (req, res) -> {
             res.type("application/json");
+
             long id = Long.parseLong(req.params(":id"));
             boolean removido = service.remove(id);
+
             if (removido) {
                 return gson.toJson("Canal removido com sucesso");
             } else {
