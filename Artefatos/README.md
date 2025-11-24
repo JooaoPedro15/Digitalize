@@ -9,7 +9,7 @@ Abaixo estão listados os artefatos atuais, com suas localizações (pastas) e u
 ## /diagramas
 
 - **Diagrama Entidade-Relacionamento (conceitual)**  
-  [![Diagrama Entidade-Relacionamento](<./diagramas/Diagrama Entidade-Relacionamento .png>)](<./diagramas/Diagrama Entidade-Relacionamento .png>)  
+  [![Diagrama Entidade-Relacionamento](<./diagramas/Diagrama Entidade-Relacionamento .png>)]
   Representação do modelo conceitual das entidades principais do projeto Digitalize.
 
 - **DER Estendido – notação Pé de Galinha (imagem)**  
@@ -18,7 +18,7 @@ Abaixo estão listados os artefatos atuais, com suas localizações (pastas) e u
   **Fonte editável (.mwb):** [Baixar](<./diagramas/Diagrama Entidade-Relacionamento Estendido em notação Pé de Galinha.mwb>)
 
 - **Diagrama de Esquema (lógico)**  
-  [![Diagrama de Esquema](<./diagramas/Diagrama de Esquema.png>)](<./diagramas/Diagrama de Esquema.png>)  
+  [![Diagrama de Esquema](<./diagramas/Diagrama de Esquema.png>)] 
   Diagrama do esquema lógico do banco de dados (tabelas e relacionamentos).
 
 ---
@@ -26,16 +26,16 @@ Abaixo estão listados os artefatos atuais, com suas localizações (pastas) e u
 ## /sistema_inteligente
 
 - **Sistema inteligente**  
-  [![Sistema inteligente](<./sistema_inteligente/Sistema inteligente.png>)](<./sistema_inteligente/Sistema inteligente.png>)  
+  [![Sistema inteligente](<./sistema_inteligente/Sistema inteligente.png>)]
   Diagrama ilustrativo do funcionamento do sistema inteligente para análise e recomendações.
 
 - **Machine Learning Canvas**
 
-[Baixar o PDF completo](<./Machine Learning Canvas.pdf>)
+[Baixar o PDF completo](<./sistema_inteligente/Machine Learning Canvas.pdf>)
 
 
-![Machine Learning Canvas — p.1](<./Machine Learning Canvas_p1.png>)
-![Machine Learning Canvas — p.2](<./Machine Learning Canvas_p2.png>)
+![Machine Learning Canvas — p.1](<./sistema_inteligente/Machine Learning Canvas_p1.png>)
+![Machine Learning Canvas — p.2](<./sistema_inteligente/Machine Learning Canvas_p2.png>)
 
 O **Machine Learning Canvas** acima sintetiza, em **duas páginas**, a proposta do módulo inteligente do projeto **Digitalize**:
 
