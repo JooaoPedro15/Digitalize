@@ -9,16 +9,16 @@ Abaixo estão listados os artefatos atuais, com suas localizações (pastas) e u
 ## /diagramas
 
 - **Diagrama Entidade-Relacionamento (conceitual)**  
-  [![Diagrama Entidade-Relacionamento](<./diagramas/Diagrama Entidade-Relacionamento .png>)]
+  [Diagrama Entidade-Relacionamento](<./diagramas/Diagrama Entidade-Relacionamento .png>)
   Representação do modelo conceitual das entidades principais do projeto Digitalize.
 
 - **DER Estendido – notação Pé de Galinha (imagem)**  
-  [![DER – notação Pé de Galinha](<./diagramas/Diagrama Entidade-Relacionamento Estendido em notação Pé de Galinha.png>)]
+  [DER – notação Pé de Galinha](<./diagramas/Diagrama Entidade-Relacionamento Estendido em notação Pé de Galinha.png>)
   Versão em imagem do DER estendido em notação Pé de Galinha.  
   **Fonte editável (.mwb):** [Baixar](<./diagramas/Diagrama Entidade-Relacionamento Estendido em notação Pé de Galinha.mwb>)
 
 - **Diagrama de Esquema (lógico)**  
-  [![Diagrama de Esquema](<./diagramas/Diagrama de Esquema.png>)] 
+  [Diagrama de Esquema](<./diagramas/Diagrama de Esquema.png>)
   Diagrama do esquema lógico do banco de dados (tabelas e relacionamentos).
 
 ---
@@ -26,7 +26,7 @@ Abaixo estão listados os artefatos atuais, com suas localizações (pastas) e u
 ## /sistema_inteligente
 
 - **Sistema inteligente**  
-  [![Sistema inteligente](<./sistema_inteligente/Sistema inteligente.png>)]
+  [Sistema inteligente](<./sistema_inteligente/Sistema inteligente.png>)
   Diagrama ilustrativo do funcionamento do sistema inteligente para análise e recomendações.
 
 - **Machine Learning Canvas**
