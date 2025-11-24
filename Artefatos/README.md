@@ -29,6 +29,20 @@ Abaixo estão listados os artefatos atuais, com suas localizações (pastas) e u
   [![Sistema inteligente](<./sistema_inteligente/Sistema inteligente.png>)](<./sistema_inteligente/Sistema inteligente.png>)  
   Diagrama ilustrativo do funcionamento do sistema inteligente para análise e recomendações.
 
+- **Machine Learning Canvas**
+
+[Baixar o PDF completo](<./Machine Learning Canvas.pdf>)
+
+
+![Machine Learning Canvas — p.1](<./Machine Learning Canvas_p1.png>)
+![Machine Learning Canvas — p.2](<./Machine Learning Canvas_p2.png>)
+
+O **Machine Learning Canvas** acima sintetiza, em **duas páginas**, a proposta do módulo inteligente do projeto **Digitalize**:
+
+- **Página 1 — Visão de Negócio:** problema/oportunidade, público-alvo, decisão a ser suportada, valor esperado, entradas (dados) e saídas (insights/recomendações), hipóteses, limitações e riscos.
+- **Página 2 — Visão Técnica/Operacional:** fontes de dados (ex.: CSV exportados dos canais), preparação/limpeza e padronização, engenharia de atributos (ex.: horário, frequência, tipo de post, engajamento), abordagem de modelagem, métricas de avaliação, plano de implantação, monitoramento e governança.
+
+
 ---
 
 ## /requisitos
