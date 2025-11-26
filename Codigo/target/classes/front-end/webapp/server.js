@@ -13,8 +13,7 @@ requiredDirs.forEach(dir => {
 });
 
 const app = express();
-const PORT = 5000;
-
+const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -651,7 +650,7 @@ app.delete('/api/empresas/:id', (req, res) => {
 });
 
 // Inicializar servidor
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   const db = loadUnifiedDB();
 
   // Sincronizar arquivos por status na inicialização
