@@ -21,7 +21,8 @@ public class Main {
 
         // Define o diretório de arquivos estáticos servidos pela aplicação.
         // O caminho é relativo a src/main/resources.
-        staticFiles.location("/public/front-end/webapp/public");
+    	staticFiles.location("/front-end/webapp/public");
+
 
         // Define a porta na qual o servidor irá rodar.
         // Usa a variável de ambiente PORT (usada em deploys),

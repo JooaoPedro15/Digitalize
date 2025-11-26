@@ -5,6 +5,7 @@ import com.model.Importacao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 /**
  * DAO responsável por operações CRUD na tabela 'importacao' do schema 'midiasocial'.
@@ -112,6 +113,11 @@ public class ImportacaoDAO {
         }
     }
 
+    // Overload de conveniência: aceita LocalDate (caso alguma chamada antiga use LocalDate)
+    public boolean remove(long canal_id, String arquivo, LocalDate inicio) throws SQLException {
+        return remove(canal_id, arquivo, java.sql.Date.valueOf(inicio));
+    }
+
     /**
      * Busca uma importação específica pelo canal, arquivo e data de início.
      * @param canal_id ID do canal
@@ -141,6 +147,11 @@ public class ImportacaoDAO {
             }
         }
         return null;
+    }
+
+    // Overload de conveniência: aceita LocalDate
+    public Importacao get(long canal_id, String arquivo, LocalDate inicio) throws SQLException {
+        return get(canal_id, arquivo, java.sql.Date.valueOf(inicio));
     }
 
     /**

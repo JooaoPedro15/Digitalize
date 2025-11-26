@@ -1,4 +1,4 @@
-package com.digitalize.dao;
+package com.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,54 +6,40 @@ import java.sql.SQLException;
 
 /**
  * Classe base para acesso ao banco de dados.
- * 
- * Responsabilidades:
- * 1. Criar conexões com o banco usando JDBC.
- * 2. Fornecer método para fechar conexões de forma segura.
- * 
- * Observações:
- * - As credenciais e URL do banco podem ser definidas via variáveis de ambiente:
- *   DB_URL, DB_USER, DB_PASS
- * - Caso não existam, são usados valores padrão (localhost / postgres).
+ *
+ * Variaveis de ambiente (opcionais):
+ *  - DB_URL  (ex.: jdbc:postgresql://localhost:5433/digitalize)
+ *  - DB_USER (ex.: postgres)
+ *  - DB_PASS (ex.: postgres)
  */
-public class DAO {
-
-    // URL de conexão com o banco (padrão ou via variável de ambiente)
-    private static final String DEFAULT_URL = System.getenv().getOrDefault(
-            "DB_URL", "jdbc:postgresql://localhost:5432/digitalize");
-
-    // Usuário do banco (padrão ou via variável de ambiente)
-    private static final String DEFAULT_USER = System.getenv().getOrDefault(
-            "DB_USER", "postgres");
-
-    // Senha do banco (padrão ou via variável de ambiente)
-    private static final String DEFAULT_PASS = System.getenv().getOrDefault(
-            "DB_PASS", "postgres");
-
+public class DAO
+{
     /**
-     * Retorna uma nova conexão com o banco de dados.
-     * @return Connection válida
-     * @throws RuntimeException caso ocorra algum erro ao conectar
+     * Retorna uma nova conexao com o banco de dados.
+     * Lanca SQLException para o chamador tratar/logar corretamente.
      */
-    public static Connection getConnection() {
-        try {
-            return DriverManager.getConnection(DEFAULT_URL, DEFAULT_USER, DEFAULT_PASS);
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao conectar ao banco de dados", e);
-        }
+    public static Connection getConnection() throws SQLException
+    {
+        String url  = System.getenv().getOrDefault("DB_URL",  "jdbc:postgresql://localhost:5433/digitalize");
+        String user = System.getenv().getOrDefault("DB_USER", "postgres");
+        String pass = System.getenv().getOrDefault("DB_PASS", "postgres");
+        return DriverManager.getConnection(url, user, pass);
     }
 
     /**
-     * Fecha a conexão passada como parâmetro, se não for nula.
-     * Qualquer SQLException durante o fechamento é ignorada.
-     * @param c Connection a ser fechada
+     * Fecha a conexao (ignora excecao no close).
      */
-    public static void close(Connection c) {
-        if (c != null) {
-            try {
+    public static void close(Connection c)
+    {
+        if (c != null)
+        {
+            try
+            {
                 c.close();
-            } catch (SQLException e) {
-                // Ignora exceção ao fechar a conexão
+            }
+            catch (SQLException e)
+            {
+                // log opcional
             }
         }
     }

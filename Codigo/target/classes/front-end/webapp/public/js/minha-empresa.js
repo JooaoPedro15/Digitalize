@@ -101,6 +101,167 @@
       <p class="muted" style="margin-top:12px">Recomendações geradas a partir do último CSV importado nesta conta.</p>
     `;
   }
+  
+  // Habilita o botao "Minhas dicas" apos o CSV ser importado.
+  // No inicio vamos testar manualmente, depois ligamos com o fluxo real.
+  function habilitarMinhasDicas(cnpj)
+  {
+      var btn = document.getElementById("btn-minhas-dicas");
+      if (!btn)
+      {
+          return;
+      }
+
+      btn.disabled = false;
+      // guarda o CNPJ no proprio botao
+      btn.dataset.cnpj = cnpj;
+  }
+
+  // Quando a pagina carregar, conecta o clique do botao
+  document.addEventListener("DOMContentLoaded", function ()
+  {
+      var btn = document.getElementById("btn-minhas-dicas");
+      if (!btn)
+      {
+          return;
+      }
+
+      // *** TESTE: habilita o botao para o CNPJ da empresa 2 ***
+      // Depois podemos remover e chamar habilitarMinhasDicas(...)
+      // a partir do fluxo de upload do CSV.
+      habilitarMinhasDicas("00000000000002");
+
+      btn.addEventListener("click", function ()
+      {
+          if (btn.disabled)
+          {
+              return;
+          }
+
+          var cnpj = btn.dataset.cnpj;
+          if (!cnpj)
+          {
+              alert("CNPJ nao definido para gerar o guia.");
+              return;
+          }
+
+          buscarGuiaPostagem(cnpj);
+      });
+  });
+
+  // Faz GET na rota /empresa/:cnpj/guia-postagem e mostra na tela
+  function buscarGuiaPostagem(cnpj)
+  {
+      var container = document.getElementById("guia-postagem");
+      if (!container)
+      {
+          return;
+      }
+
+      container.innerHTML = "<p>Gerando dicas...</p>";
+
+      fetch("/empresa/" + encodeURIComponent(cnpj) + "/guia-postagem")
+          .then(function (resp)
+          {
+              if (!resp.ok)
+              {
+                  return resp.text().then(function (txt)
+                  {
+                      throw new Error("Erro " + resp.status + ": " + txt);
+                  });
+              }
+              return resp.json();
+          })
+          .then(function (guia)
+          {
+              renderizarGuia(guia, container);
+          })
+          .catch(function (erro)
+          {
+              console.error(erro);
+              container.innerHTML =
+                  "<p style='color:red;'>Erro ao gerar guia: "
+                  + erro.message + "</p>";
+          });
+  }
+
+  // Monta o HTML do guia de postagem
+  function renderizarGuia(guia, container)
+  {
+      var html = "";
+
+      html += "<div style='border:1px solid #ddd; border-radius:8px; padding:12px; background:#f8fafc; font-size:14px;'>";
+
+      // Resumo
+      html += "<h3 style='font-weight:bold; margin-bottom:4px;'>Resumo do periodo</h3>";
+      html += "<p>" + (guia.resumo_periodo || "") + "</p>";
+
+      // Top 3 insights
+      html += "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Top 3 insights</h3>";
+      html += "<ul>";
+      if (guia.top_3_insights)
+      {
+          guia.top_3_insights.forEach(function (t)
+          {
+              html += "<li>" + t + "</li>";
+          });
+      }
+      html += "</ul>";
+
+      // Melhores horarios
+      html += "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Melhores horarios</h3>";
+      if (guia.melhores_horarios && guia.melhores_horarios.length > 0)
+      {
+          html += "<p>" + guia.melhores_horarios.join(", ") + "</p>";
+      }
+      else
+      {
+          html += "<p>—</p>";
+      }
+
+      // Tom de voz
+      html += "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Tom de voz recomendado</h3>";
+      html += "<ul>";
+      if (guia.diretrizes_tom_voz)
+      {
+          guia.diretrizes_tom_voz.forEach(function (t)
+          {
+              html += "<li>" + t + "</li>";
+          });
+      }
+      html += "</ul>";
+
+      // O que evitar
+      html += "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>O que evitar</h3>";
+      html += "<ul>";
+      if (guia.o_que_evitar)
+      {
+          guia.o_que_evitar.forEach(function (t)
+          {
+              html += "<li>" + t + "</li>";
+          });
+      }
+      html += "</ul>";
+
+      // Sugestoes de posts
+      html += "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Sugestoes de posts</h3>";
+      if (guia.sugestoes_posts)
+      {
+          guia.sugestoes_posts.forEach(function (sug, i)
+          {
+              html += "<div style='border:1px solid #e2e8f0; border-radius:6px; padding:8px; margin-top:6px; background:white;'>";
+              html += "<p style='font-weight:bold;'>" + (sug.titulo || ("Ideia " + (i + 1))) + "</p>";
+              html += "<p><strong>Legenda:</strong> " + (sug.descricao_legendada || "") + "</p>";
+              html += "<p style='font-size:12px;'><strong>Justificativa:</strong> " + (sug.justificativa || "") + "</p>";
+              html += "</div>";
+          });
+      }
+
+      html += "</div>";
+
+      container.innerHTML = html;
+  }
+
 
   // Main
   const user = getUser();

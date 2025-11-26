@@ -75,7 +75,7 @@ public class CanalController {
             long id = Long.parseLong(req.params(":id"));
             Canal canal = gson.fromJson(req.body(), Canal.class);
 
-            canal.setId(id); // garante vinculação correta do recurso
+            canal.setCanalId(id); // garante vinculação correta do recurso
 
             boolean atualizado = service.update(canal);
 

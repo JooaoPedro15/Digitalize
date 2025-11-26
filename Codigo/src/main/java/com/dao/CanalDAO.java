@@ -33,9 +33,9 @@ public class CanalDAO {
         try (Connection conn = DAO.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, c.getEmpresa_cnpj());
+            ps.setString(1, c.getEmpresaCnpj());
             ps.setString(2, c.getPlataforma());
-            ps.setString(3, c.getCanal_identificador());
+            ps.setString(3, c.getCanalIdentificador());
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -71,10 +71,10 @@ public class CanalDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Canal c = new Canal();
-                    c.setCanal_id(rs.getLong("canal_id"));
-                    c.setEmpresa_cnpj(rs.getString("empresa_cnpj"));
+                    c.setCanalId(rs.getLong("canal_id"));
+                    c.setEmpresaCnpj(rs.getString("empresa_cnpj"));
                     c.setPlataforma(rs.getString("plataforma"));
-                    c.setCanal_identificador(rs.getString("canal_identificador"));
+                    c.setCanalIdentificador(rs.getString("canal_identificador"));
                     out.add(c);
                 }
             }
@@ -99,10 +99,10 @@ public class CanalDAO {
         try (Connection conn = DAO.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, x.getEmpresa_cnpj());
+            ps.setString(1, x.getEmpresaCnpj());
             ps.setString(2, x.getPlataforma());
-            ps.setString(3, x.getCanal_identificador());
-            ps.setLong(4, x.getCanal_id());
+            ps.setString(3, x.getCanalIdentificador());
+            ps.setLong(4, x.getCanalId());
 
             return ps.executeUpdate() > 0;
         }
@@ -146,10 +146,10 @@ public class CanalDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Canal c = new Canal();
-                    c.setCanal_id(rs.getLong("canal_id"));
-                    c.setEmpresa_cnpj(rs.getString("empresa_cnpj"));
+                    c.setCanalId(rs.getLong("canal_id"));
+                    c.setEmpresaCnpj(rs.getString("empresa_cnpj"));
                     c.setPlataforma(rs.getString("plataforma"));
-                    c.setCanal_identificador(rs.getString("canal_identificador"));
+                    c.setCanalIdentificador(rs.getString("canal_identificador"));
                     return c;
                 }
             }
@@ -178,10 +178,10 @@ public class CanalDAO {
 
             while (rs.next()) {
                 Canal c = new Canal();
-                c.setCanal_id(rs.getLong("canal_id"));
-                c.setEmpresa_cnpj(rs.getString("empresa_cnpj"));
+                c.setCanalId(rs.getLong("canal_id"));
+                c.setEmpresaCnpj(rs.getString("empresa_cnpj"));
                 c.setPlataforma(rs.getString("plataforma"));
-                c.setCanal_identificador(rs.getString("canal_identificador"));
+                c.setCanalIdentificador(rs.getString("canal_identificador"));
                 out.add(c);
             }
         }
