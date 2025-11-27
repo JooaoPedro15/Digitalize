@@ -14,6 +14,8 @@ import com.google.gson.Gson;
 import static spark.Spark.*;
 
 import java.sql.Date;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Classe responsável por registrar e montar todas as rotas da API.
@@ -23,19 +25,46 @@ import java.sql.Date;
  * - /canais: CRUD básico de canais
  * - /importacoes: Inserção/atualização de importações
  * - /posts: Inserção/atualização de posts e listagem por canal e período
- * - /empresa/:cnpj/guia-postagem: Geração do Guia de Postagem (Sistema Inteligente)
+ * - /empresa/:cnpj/guia-postagem: Geração do Guia de Postagem (Sistema
+ * Inteligente)
  */
-public class Routes
-{
+public class Routes {
     // Gson compartilhado para serialização e desserialização JSON
     public static final Gson gson = ApiConfig.gson;
+
+    // Aplica um hash (SHA-256) na senha antes de armazenar ou comparar.
+    // Assim, a senha verdadeira não fica exposta em texto puro na aplicação.
+    private static String hashSenha(String senhaPura) {
+        if (senhaPura == null) {
+            return null;
+        }
+        try {
+            // Cria um objeto que sabe calcular SHA-256
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+            // Converte a String da senha para bytes usando UTF-8
+            byte[] hashBytes = md.digest(senhaPura.getBytes(StandardCharsets.UTF_8));
+
+            // Transforma os bytes em uma String hexadecimal (ex: "8d969e...")
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+
+            // Retorna o hash em formato de texto
+            return sb.toString();
+        } catch (Exception e) {
+            // Em um sistema maior, seria melhor logar isso direito.
+            // Aqui simplificamos lançando uma RuntimeException.
+            throw new RuntimeException("Erro ao calcular hash da senha", e);
+        }
+    }
 
     /**
      * Monta todas as rotas da aplicação.
      * Executa a migração inicial do schema do banco.
      */
-    public static void mount()
-    {
+    public static void mount() {
         // Executa migração do banco (criação de tabelas se não existirem)
         System.out.println("Migrating database...");
         SchemaMigrator.migrate();
@@ -47,8 +76,7 @@ public class Routes
          * Rota de verificação da saúde da API
          * GET /health
          */
-        get("/health", (req, res) ->
-        {
+        get("/health", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return "{\"status\":\"ok\"}";
         });
@@ -59,8 +87,7 @@ public class Routes
          * Corpo esperado: JSON representando um Canal
          * Retorna o ID do canal criado
          */
-        post("/canais", (req, res) ->
-        {
+        post("/canais", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             Canal c = gson.fromJson(req.body(), Canal.class);
@@ -74,8 +101,7 @@ public class Routes
          * GET /canais/:cnpj
          * Retorna JSON com todos os canais da empresa
          */
-        get("/canais/:cnpj", (req, res) ->
-        {
+        get("/canais/:cnpj", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             String cnpj = req.params(":cnpj");
@@ -87,8 +113,7 @@ public class Routes
          * POST /importacoes
          * Corpo esperado: JSON representando uma Importacao
          */
-        post("/importacoes", (req, res) ->
-        {
+        post("/importacoes", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             Importacao imp = gson.fromJson(req.body(), Importacao.class);
@@ -102,8 +127,7 @@ public class Routes
          * POST /posts
          * Corpo esperado: JSON representando um Post
          */
-        post("/posts", (req, res) ->
-        {
+        post("/posts", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             Post p = gson.fromJson(req.body(), Post.class);
@@ -116,19 +140,18 @@ public class Routes
          * Listagem de posts de um canal em um intervalo de datas
          * GET /posts/:canalId?start=yyyy-MM-dd&end=yyyy-MM-dd
          */
-        get("/posts/:canalId", (req, res) ->
-        {
+        get("/posts/:canalId", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             long canalId = Long.parseLong(req.params(":canalId"));
 
             // Recupera parâmetros de data da query string
             String startParam = req.queryParams("start");
-            String endParam   = req.queryParams("end");
+            String endParam = req.queryParams("end");
 
             // Converte strings para java.sql.Date (formato "yyyy-MM-dd")
             Date start = Date.valueOf(startParam);
-            Date end   = Date.valueOf(endParam);
+            Date end = Date.valueOf(endParam);
 
             return gson.toJson(new PostDAO().listByCanal(canalId, start, end));
         });
@@ -137,25 +160,20 @@ public class Routes
          * Geração do "Guia de Postagem" em JSON para um CNPJ.
          * Ex.: GET http://localhost:8080/empresa/00000000000001/guia-postagem
          */
-        get("/empresa/:cnpj/guia-postagem", (req, res) ->
-        {
+        get("/empresa/:cnpj/guia-postagem", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
-            String cnpj = req.params(":cnpj");   // lê o CNPJ da URL
+            String cnpj = req.params(":cnpj"); // lê o CNPJ da URL
 
-            try
-            {
+            try {
                 // Delegamos a lógica para o GuiaService (que usa AzureOpenAIClient ou fallback)
                 return guiaService.gerarGuiaParaEmpresa(cnpj);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 res.status(500);
 
                 String msg = e.getMessage();
-                if (msg == null)
-                {
+                if (msg == null) {
                     msg = "Erro interno ao gerar guia.";
                 }
                 // Evita quebrar o JSON com aspas duplas
@@ -164,36 +182,34 @@ public class Routes
                 return "{\"erro\":\"" + msg + "\"}";
             }
         });
-        
-        get("/debug/azure-env", (req, res) ->
-        {
+
+        get("/debug/azure-env", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             String endpoint = System.getenv("AZURE_OPENAI_ENDPOINT");
-            String key      = System.getenv("AZURE_OPENAI_API_KEY");
-            String ver      = System.getenv("AZURE_OPENAI_API_VERSION");
-            String chatDep  = System.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT");
-            String embDep   = System.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT");
+            String key = System.getenv("AZURE_OPENAI_API_KEY");
+            String ver = System.getenv("AZURE_OPENAI_API_VERSION");
+            String chatDep = System.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT");
+            String embDep = System.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT");
 
             String keyPreview = (key == null) ? null
-                : (key.length() > 6 ? key.substring(0, 6) + "..." : key);
+                    : (key.length() > 6 ? key.substring(0, 6) + "..." : key);
 
             return "{"
-                + "\"endpoint\":\""   + String.valueOf(endpoint) + "\","
-                + "\"apiKey\":\""     + String.valueOf(keyPreview) + "\","
-                + "\"apiVersion\":\"" + String.valueOf(ver) + "\","
-                + "\"chatDep\":\""    + String.valueOf(chatDep) + "\","
-                + "\"embDep\":\""     + String.valueOf(embDep) + "\""
-                + "}";
+                    + "\"endpoint\":\"" + String.valueOf(endpoint) + "\","
+                    + "\"apiKey\":\"" + String.valueOf(keyPreview) + "\","
+                    + "\"apiVersion\":\"" + String.valueOf(ver) + "\","
+                    + "\"chatDep\":\"" + String.valueOf(chatDep) + "\","
+                    + "\"embDep\":\"" + String.valueOf(embDep) + "\""
+                    + "}";
         });
-        
+
         // ============================
-        //  AUTENTICACAO SIMPLES /API
+        // AUTENTICACAO SIMPLES /API
         // ============================
 
         // Classe interna simples so para representar usuario na API
-        class UsuarioApi
-        {
+        class UsuarioApi {
             long id;
             String nome;
             String email;
@@ -201,47 +217,47 @@ public class Routes
             String tipo; // "admin" ou "usuario"
             boolean ativo;
 
-            UsuarioApi(long id, String nome, String email, String senha, String tipo)
-            {
-                this.id    = id;
-                this.nome  = nome;
+            UsuarioApi(long id, String nome, String email, String senha, String tipo) {
+                this.id = id;
+                this.nome = nome;
                 this.email = email;
                 this.senha = senha;
-                this.tipo  = tipo;
+                this.tipo = tipo;
                 this.ativo = true;
             }
         }
 
         // Lista em memoria de usuarios de teste
         java.util.List<UsuarioApi> usuariosApi = new java.util.ArrayList<>();
-        // TODO: ajuste estes dados para bater com o login de teste que voce ja descobriu
-        usuariosApi.add(new UsuarioApi(1L, "Admin", "admin@teste.com", "123456", "admin"));
-        usuariosApi.add(new UsuarioApi(2L, "Usuario", "user@teste.com", "123456", "usuario"));
+        // TODO: ajuste estes dados para bater com o login de teste que voce ja
+        // descobriu
+        usuariosApi.add(new UsuarioApi(1L, "Admin", "admin@teste.com", hashSenha("123456"), "admin"));
+        usuariosApi.add(new UsuarioApi(2L, "Usuario", "user@teste.com", hashSenha("123456"), "usuario"));
 
-        // GET /api/usuarios  -> usado no register() para ver se o email ja existe
-        get("/api/usuarios", (req, res) ->
-        {
+        // GET /api/usuarios -> usado no register() para ver se o email ja existe
+        get("/api/usuarios", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return gson.toJson(usuariosApi);
         });
 
         // POST /api/usuarios -> usado no register() para "cadastrar" novo usuario
-        post("/api/usuarios", (req, res) ->
-        {
+        post("/api/usuarios", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             UsuarioApi novo = gson.fromJson(req.body(), UsuarioApi.class);
-            if (novo == null || novo.email == null)
-            {
+            if (novo == null || novo.email == null) {
                 res.status(400);
                 return "{\"success\":false,\"message\":\"Dados invalidos\"}";
             }
 
+            // converte a senha pra hash para o armazenamento
+            novo.senha = hashSenha(novo.senha);
+
             // So para simular: adiciona na lista em memoria
             long novoId = usuariosApi.stream()
-                                     .mapToLong(u -> u.id)
-                                     .max()
-                                     .orElse(0L) + 1L;
+                    .mapToLong(u -> u.id)
+                    .max()
+                    .orElse(0L) + 1L;
             novo.id = novoId;
             usuariosApi.add(novo);
 
@@ -250,58 +266,55 @@ public class Routes
         });
 
         // POST /api/login -> usado no login()
-        post("/api/login", (req, res) ->
-        {
+        post("/api/login", (req, res) -> {
             res.type("application/json; charset=utf-8");
 
             // Corpo esperado: { "email": "...", "senha": "..." }
-            class LoginReq
-            {
+            class LoginReq {
                 String email;
                 String senha;
             }
 
             LoginReq body = gson.fromJson(req.body(), LoginReq.class);
-            if (body == null || body.email == null || body.senha == null)
-            {
+            if (body == null || body.email == null || body.senha == null) {
                 res.status(400);
                 return "{\"success\":false,\"error\":\"Dados de login invalidos\"}";
             }
 
-            // Procura usuario com email/senha
+            // Calcula o hash da senha informada no login
+            String senhaHash = hashSenha(body.senha);
+
+            // Procura usuario com email + hash da senha
             UsuarioApi encontrado = null;
-            for (UsuarioApi u : usuariosApi)
-            {
-                if (u.email.equals(body.email) && u.senha.equals(body.senha) && u.ativo)
-                {
+            for (UsuarioApi u : usuariosApi) {
+                if (u.email.equals(body.email) && u.senha.equals(senhaHash) && u.ativo) {
                     encontrado = u;
                     break;
                 }
             }
 
-            if (encontrado == null)
-            {
+            if (encontrado == null) {
                 res.status(401);
                 return "{\"success\":false,\"error\":\"Email ou senha incorretos\"}";
             }
 
-            // Monta objeto de resposta igual o que o front espera: { success, message, usuario }
+            // Monta objeto de resposta igual o que o front espera: { success, message,
+            // usuario }
             java.util.Map<String, Object> resp = new java.util.HashMap<>();
             resp.put("success", true);
             resp.put("message", "Login realizado com sucesso");
 
             java.util.Map<String, Object> usuario = new java.util.HashMap<>();
-            usuario.put("id",    encontrado.id);
-            usuario.put("nome",  encontrado.nome);
+            usuario.put("id", encontrado.id);
+            usuario.put("nome", encontrado.nome);
             usuario.put("email", encontrado.email);
-            usuario.put("tipo",  encontrado.tipo);
+            usuario.put("tipo", encontrado.tipo);
             usuario.put("ativo", encontrado.ativo);
 
             resp.put("usuario", usuario);
 
             return gson.toJson(resp);
         });
-
 
     }
 }
