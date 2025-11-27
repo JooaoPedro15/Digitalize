@@ -751,6 +751,7 @@ main {
 .user-menu.hidden {
   display: none;
 }
+
 /* === BUTTONS === */
 .btn {
   display: inline-block;
@@ -1420,7 +1421,7 @@ main {
     transition: var(--transition-normal);
     padding: var(--spacing-sm);
     border-radius: 50%;
-    color: #9ca3af; /* Cinza para não favoritado */
+    color: #9ca3af;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1429,16 +1430,16 @@ main {
 .favorito-btn:hover {
     background: rgba(0, 0, 0, 0.05);
     transform: scale(1.1);
-    color: #6b7280; /* Cinza mais escuro no hover quando não favoritado */
+    color: #6b7280;
 }
 
 .favorito-btn.favoritado {
-    color: #ef4444; /* Vermelho para favoritado */
+    color: #ef4444;
 }
 
 .favorito-btn.favoritado:hover {
     background: rgba(239, 68, 68, 0.1);
-    color: #dc2626; /* Vermelho mais escuro no hover quando favoritado */
+    color: #dc2626;
 }
 
 .remove-favorito {
@@ -1517,9 +1518,10 @@ main {
     box-shadow: var(--shadow-md);
 }
 
+/* Botão "Minhas dicas" alinhado à direita */
 .minhas-dicas-wrapper {
     display: flex;
-    justify-content: flex-end;   /* botão encostado à direita */
+    justify-content: flex-end;
     margin-bottom: 16px;
 }
 
@@ -1528,23 +1530,16 @@ main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     padding: 8px 20px;
     border-radius: 999px;
     border: none;
-
-    background: linear-gradient(90deg, #4e54c8, #8f94fb); /* degrade roxo/azul */
+    background: linear-gradient(90deg, #4e54c8, #8f94fb);
     color: #ffffff;
     font-weight: 600;
     font-size: 14px;
-
     box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
     cursor: pointer;
-
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease,
-        filter 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .btn-minhas-dicas:hover {
@@ -1558,3 +1553,72 @@ main {
     box-shadow: 0 3px 8px rgba(78, 84, 200, 0.25);
     filter: brightness(0.96);
 }
+
+/* =========================================================
+   MINHAS DICAS / GUIA DE POSTAGEM – AREA DE CONTEUDO
+   ========================================================= */
+
+/* Container geral das dicas (troque o seletor caso use outro ID) */
+
+.guia-dicas-container,
+#guia-postagem {
+    max-width: 100%;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.75rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--gray-200);
+    line-height: 1.7;
+}
+
+/* Títulos dentro do guia */
+#guia-postagem h2 {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.75rem;
+}
+
+#guia-postagem h3 {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Texto do guia */
+#guia-postagem p {
+    color: var(--gray-700);
+    margin-bottom: 0.4rem;
+    line-height: 1.7;
+    font-size: 0.98rem;
+}
+
+/* Listas, caso o texto venha com bullets */
+#guia-postagem ul {
+    padding-left: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+#guia-postagem li {
+    color: var(--gray-700);
+    margin-bottom: 0.25rem;
+}
+
+/* Separação leve entre blocos (se o LLM gerar <section>) */
+#guia-postagem section {
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px dashed var(--gray-200);
+}
+
+#guia-postagem section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
