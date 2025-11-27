@@ -25,6 +25,7 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          cd Codigo/src/main/resources/front-end/webapp
           npm install
           npm run build --if-present
           npm run test --if-present
@@ -62,4 +63,5 @@ jobs:
           app-name: 'digitalize'
           slot-name: 'Production'
           package: .
+
           
