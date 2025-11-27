@@ -55,7 +55,7 @@ O **Machine Learning Canvas** acima sintetiza, em **duas páginas**, a proposta 
 
 - **Estrutura das pastas**
 
-   ![Estrutura Pastas](<./outros/estrutura_pastas.png>)
+   ![Estrutura Pastas](<./Outros/estrutura_pastas.png>)
 
 
 
