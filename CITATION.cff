@@ -1,31 +1,29 @@
 cff-version: 1.0.1
 message: Please cite this software using these metadata.
-title: 
+title: Digitalize 
 authors:
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names: 
-  - family-names: 
-    given-names:
+  - family-names: Murta de Abreu
+    given-names: Eduardo 
+  - family-names: Micaele Soares Ferreira
+    given-names: Jamille
+  - family-names: Pedro Costa e Silva
+    given-names: João
+  - family-names: Varella Araújo
+    given-names: Larissa
   - name-suffix: Professor
     affiliation: PUC Minas
-    family-names: 
-    given-names: 
+    family-names: Soares Vieira de Vasconcelos
+    given-names: Amália
   - name-suffix: Professor
     affiliation: PUC Minas
-    family-names: 
-    given-names: 
+    family-names: do Val Machado
+    given-names: Max
 keywords:
-  - 
-  - 
-repository-code: 
+  - Empresas 
+  - Divulgação
+  - Redes sociais
+  - Engajamento
+repository-code: https://github.com/ICEI-PUC-Minas-CC-TI/plmg-cc-ti2-2025-2-g15-digitalize
 license: CC-BY-4.0
 version: 1.0.0
 date-released: 2022-07-14
