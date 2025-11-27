@@ -1516,3 +1516,45 @@ main {
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
+
+.minhas-dicas-wrapper {
+    display: flex;
+    justify-content: flex-end;   /* botão encostado à direita */
+    margin-bottom: 16px;
+}
+
+/* Botão "Minhas dicas" */
+.btn-minhas-dicas {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: none;
+
+    background: linear-gradient(90deg, #4e54c8, #8f94fb); /* degrade roxo/azul */
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+
+    box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        filter 0.15s ease;
+}
+
+.btn-minhas-dicas:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(78, 84, 200, 0.35);
+    filter: brightness(1.05);
+}
+
+.btn-minhas-dicas:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(78, 84, 200, 0.25);
+    filter: brightness(0.96);
+}

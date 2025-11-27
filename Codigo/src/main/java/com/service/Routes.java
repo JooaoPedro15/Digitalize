@@ -4,10 +4,12 @@ import com.dao.SchemaMigrator;
 import com.dao.CanalDAO;
 import com.dao.ImportacaoDAO;
 import com.dao.PostDAO;
+import com.dao.EmpresaDAO;
 
 import com.model.Canal;
 import com.model.Importacao;
 import com.model.Post;
+import com.model.Empresa;
 
 import com.google.gson.Gson;
 
@@ -29,10 +31,7 @@ public class Routes
     // ===========================
     private static String hashSenha(String senhaPura)
     {
-        if (senhaPura == null)
-        {
-            return null;
-        }
+        if (senhaPura == null) { return null; }
         try
         {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -50,13 +49,14 @@ public class Routes
         }
     }
 
+    /** Representa um usuário de teste para login no front. */
     public static class UsuarioApi
     {
         public long id;
         public String nome;
         public String email;
         public String senha;
-        public String tipo; // admin | usuario
+        public String tipo;
         public boolean ativo;
 
         public UsuarioApi(long id, String nome, String email, String senha, String tipo)
@@ -70,49 +70,58 @@ public class Routes
         }
     }
 
+    /** Payload de login enviado pelo front. */
     public static class LoginReq
     {
         public String email;
         public String senha;
-
-        public LoginReq()
-        {
-        }
+        public LoginReq() {}
     }
 
-    // ===========================
-    // “Banco” em memória
-    // ===========================
+    // Lista em memória de usuários de teste e avaliações.
     private static final java.util.List<UsuarioApi> usuariosApi = new java.util.ArrayList<>();
-    private static final java.util.List<java.util.Map<String, Object>> empresasApi  = new java.util.ArrayList<>();
     private static final java.util.List<java.util.Map<String, Object>> avaliacoesApi = new java.util.ArrayList<>();
 
+    // Inicializa usuários fake.
     static
     {
-        usuariosApi.add(new UsuarioApi(1L, "Admin", "admin@teste.com", hashSenha("123456"), "admin"));
-        usuariosApi.add(new UsuarioApi(2L, "Usuario", "user@teste.com",  hashSenha("123456"), "usuario"));
+        usuariosApi.add(new UsuarioApi(1L, "Admin",  "admin@teste.com", hashSenha("123456"), "admin"));
+        usuariosApi.add(new UsuarioApi(2L, "Usuario","user@teste.com",  hashSenha("123456"), "usuario"));
     }
 
-    // ===========================
-    // Rotas
-    // ===========================
+    // Helper para mapear Empresa → JSON compatível com o front
+    private static java.util.Map<String, Object> empresaToApi(Empresa e)
+    {
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("id", e.getCnpj());
+        m.put("cnpj", e.getCnpj());
+        m.put("nomeFantasia", e.getNome_fantasia());
+        m.put("nome_fantasia", e.getNome_fantasia());
+        m.put("razaoSocial", e.getRazao_social());
+        m.put("razao_social", e.getRazao_social());
+        m.put("segmento", e.getSegmento());
+        m.put("endereco", e.getEndereco());
+        m.put("status", e.getStatus());
+        m.put("responsavelEmail", e.getResponsavel_email());
+        m.put("email", e.getEmail_contato());
+        return m;
+    }
+
     public static void mount()
     {
-        System.out.println("Migrating database...");
+        // Executa as migrações de schema.
         SchemaMigrator.migrate();
 
         GuiaService guiaService = new GuiaService();
 
         // ----------------- Health -----------------
-        get("/health", (req, res) ->
-        {
+        get("/health", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return "{\"status\":\"ok\"}";
         });
 
         // ----------------- Canais -----------------
-        post("/canais", (req, res) ->
-        {
+        post("/canais", (req, res) -> {
             res.type("application/json; charset=utf-8");
             Canal c = gson.fromJson(req.body(), Canal.class);
             long id = new CanalDAO().insert(c);
@@ -120,16 +129,14 @@ public class Routes
             return "{\"canal_id\":" + id + "}";
         });
 
-        get("/canais/:cnpj", (req, res) ->
-        {
+        get("/canais/:cnpj", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String cnpj = req.params(":cnpj");
             return gson.toJson(new CanalDAO().listByEmpresa(cnpj));
         });
 
         // --------------- Importações ---------------
-        post("/importacoes", (req, res) ->
-        {
+        post("/importacoes", (req, res) -> {
             res.type("application/json; charset=utf-8");
             Importacao imp = gson.fromJson(req.body(), Importacao.class);
             new ImportacaoDAO().upsert(imp);
@@ -138,8 +145,7 @@ public class Routes
         });
 
         // ------------------ Posts ------------------
-        post("/posts", (req, res) ->
-        {
+        post("/posts", (req, res) -> {
             res.type("application/json; charset=utf-8");
             Post p = gson.fromJson(req.body(), Post.class);
             new PostDAO().upsert(p);
@@ -147,36 +153,27 @@ public class Routes
             return "{\"ok\":true}";
         });
 
-        get("/posts/:canalId", (req, res) ->
-        {
+        get("/posts/:canalId", (req, res) -> {
             res.type("application/json; charset=utf-8");
-
             long canalId = Long.parseLong(req.params(":canalId"));
             String startParam = req.queryParams("start");
             String endParam   = req.queryParams("end");
-
             Date start = Date.valueOf(startParam);
             Date end   = Date.valueOf(endParam);
-
             return gson.toJson(new PostDAO().listByCanal(canalId, start, end));
         });
 
         // -------- Guia de Postagem (SI) -----------
-        get("/empresa/:cnpj/guia-postagem", (req, res) ->
-        {
+        get("/empresa/:cnpj/guia-postagem", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String cnpj = req.params(":cnpj");
-            try
-            {
+            try {
                 return guiaService.gerarGuiaParaEmpresa(cnpj);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 res.status(500);
                 String msg = e.getMessage();
-                if (msg == null)
-                {
+                if (msg == null) {
                     msg = "Erro interno ao gerar guia.";
                 }
                 msg = msg.replace("\"", "'");
@@ -185,277 +182,237 @@ public class Routes
         });
 
         // --------------- Debug Azure ---------------
-        get("/debug/azure-env", (req, res) ->
-        {
+        get("/debug/azure-env", (req, res) -> {
             res.type("application/json; charset=utf-8");
-
             String endpoint = System.getenv("AZURE_OPENAI_ENDPOINT");
             String key      = System.getenv("AZURE_OPENAI_API_KEY");
             String ver      = System.getenv("AZURE_OPENAI_API_VERSION");
             String chatDep  = System.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT");
             String embDep   = System.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT");
-
             String keyPreview = (key == null) ? null :
-                    (key.length() > 6 ? key.substring(0, 6) + "..." : key);
-
+                (key.length() > 6 ? key.substring(0, 6) + "..." : key);
             return "{"
-                    + "\"endpoint\":\"" + String.valueOf(endpoint) + "\","
-                    + "\"apiKey\":\"" + String.valueOf(keyPreview) + "\","
-                    + "\"apiVersion\":\"" + String.valueOf(ver) + "\","
-                    + "\"chatDep\":\"" + String.valueOf(chatDep) + "\","
-                    + "\"embDep\":\"" + String.valueOf(embDep) + "\""
-                    + "}";
+                + "\"endpoint\":\"" + String.valueOf(endpoint) + "\","
+                + "\"apiKey\":\"" + String.valueOf(keyPreview) + "\","
+                + "\"apiVersion\":\"" + String.valueOf(ver) + "\","
+                + "\"chatDep\":\"" + String.valueOf(chatDep) + "\","
+                + "\"embDep\":\"" + String.valueOf(embDep) + "\""
+                + "}";
         });
 
         // ==========================================
         // AUTENTICAÇÃO SIMPLES
         // ==========================================
-        get("/api/usuarios", (req, res) ->
-        {
+        get("/api/usuarios", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return gson.toJson(usuariosApi);
         });
 
-        post("/api/usuarios", (req, res) ->
-        {
+        post("/api/usuarios", (req, res) -> {
             res.type("application/json; charset=utf-8");
-
             UsuarioApi novo = gson.fromJson(req.body(), UsuarioApi.class);
-            if (novo == null || novo.email == null)
-            {
+            if (novo == null || novo.email == null) {
                 res.status(400);
                 return "{\"success\":false,\"message\":\"Dados invalidos\"}";
             }
-
             novo.senha = hashSenha(novo.senha);
-
             long novoId = usuariosApi.stream()
                                      .mapToLong(u -> u.id)
                                      .max()
                                      .orElse(0L) + 1L;
             novo.id = novoId;
             usuariosApi.add(novo);
-
             res.status(201);
             return "{\"success\":true,\"message\":\"Usuario cadastrado com sucesso\"}";
         });
 
-        post("/api/login", (req, res) ->
-        {
+        post("/api/login", (req, res) -> {
             res.type("application/json; charset=utf-8");
-
             LoginReq body = gson.fromJson(req.body(), LoginReq.class);
-            if (body == null || body.email == null || body.senha == null)
-            {
+            if (body == null || body.email == null || body.senha == null) {
                 res.status(400);
                 return "{\"success\":false,\"error\":\"Dados de login invalidos\"}";
             }
-
             String senhaHash = hashSenha(body.senha);
-
             UsuarioApi encontrado = null;
-            for (UsuarioApi u : usuariosApi)
-            {
-                if (u.email.equals(body.email) && u.senha.equals(senhaHash) && u.ativo)
-                {
+            for (UsuarioApi u : usuariosApi) {
+                if (u.email.equals(body.email) && u.senha.equals(senhaHash) && u.ativo) {
                     encontrado = u;
                     break;
                 }
             }
-
-            if (encontrado == null)
-            {
+            if (encontrado == null) {
                 res.status(401);
                 return "{\"success\":false,\"error\":\"Email ou senha incorretos\"}";
             }
-
             java.util.Map<String, Object> resp = new java.util.HashMap<>();
             resp.put("success", true);
             resp.put("message", "Login realizado com sucesso");
-
             java.util.Map<String, Object> usuario = new java.util.HashMap<>();
             usuario.put("id", encontrado.id);
             usuario.put("nome", encontrado.nome);
             usuario.put("email", encontrado.email);
             usuario.put("tipo", encontrado.tipo);
             usuario.put("ativo", encontrado.ativo);
-
             resp.put("usuario", usuario);
-
             return gson.toJson(resp);
         });
 
         // ==========================================
-        // EMPRESAS – compatível com front unificado
+        // EMPRESAS – usando PostgreSQL
         // ==========================================
 
-        // GET /api/empresas  (lista + filtros)
-        get("/api/empresas", (req, res) ->
-        {
+        // GET /api/empresas  – lista empresas, suporta filtros
+        get("/api/empresas", (req, res) -> {
             res.type("application/json; charset=utf-8");
-
-            String respEmail = req.queryParams("responsavelEmail");
-            String email     = req.queryParams("email");
+            String respEmail  = req.queryParams("responsavelEmail");
+            String email      = req.queryParams("email");
             String limitParam = req.queryParams("_limit");
-
             String respEmailLower = respEmail != null ? respEmail.toLowerCase() : null;
             String emailLower     = email     != null ? email.toLowerCase()     : null;
-
+            EmpresaDAO dao = new EmpresaDAO();
+            java.util.List<Empresa> todas = dao.listar();
             java.util.List<java.util.Map<String, Object>> resultado = new java.util.ArrayList<>();
-
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object rMailObj = e.get("responsavelEmail");
-                Object mailObj  = e.get("email");
-                Object respObj  = e.get("responsavel");
-
-                String rMailLower = rMailObj != null ? String.valueOf(rMailObj).toLowerCase() : null;
-                String mailLower  = mailObj  != null ? String.valueOf(mailObj).toLowerCase()  : null;
-                String respInsideLower = null;
-
-                if (respObj instanceof java.util.Map<?, ?>)
-                {
-                    Object inside = ((java.util.Map<?, ?>) respObj).get("email");
-                    if (inside != null)
-                    {
-                        respInsideLower = String.valueOf(inside).toLowerCase();
-                    }
-                }
-
+            for (Empresa e : todas) {
+                String respLower = e.getResponsavel_email() != null
+                        ? e.getResponsavel_email().toLowerCase()
+                        : null;
+                String mailLower = e.getEmail_contato() != null
+                        ? e.getEmail_contato().toLowerCase()
+                        : null;
                 boolean match = false;
-
-                if (respEmailLower == null && emailLower == null)
-                {
-                    // sem filtros -> lista tudo
+                if (respEmailLower == null && emailLower == null) {
                     match = true;
-                }
-                else
-                {
-                    if (respEmailLower != null)
-                    {
-                        if (respEmailLower.equals(rMailLower) ||
-                            respEmailLower.equals(respInsideLower))
-                        {
+                } else {
+                    if (respEmailLower != null) {
+                        if (respEmailLower.equals(respLower)) {
                             match = true;
                         }
                     }
-                    if (!match && emailLower != null)
-                    {
-                        if (emailLower.equals(mailLower) ||
-                            emailLower.equals(respInsideLower) ||
-                            emailLower.equals(rMailLower))
-                        {
+                    if (!match && emailLower != null) {
+                        if (emailLower.equals(mailLower) || emailLower.equals(respLower)) {
                             match = true;
                         }
                     }
                 }
-
-                if (match)
-                {
-                    resultado.add(e);
+                if (match) {
+                    resultado.add(empresaToApi(e));
                 }
             }
-
-            if (limitParam != null)
-            {
-                try
-                {
+            if (limitParam != null) {
+                try {
                     int limit = Integer.parseInt(limitParam);
-                    if (limit > 0 && resultado.size() > limit)
-                    {
+                    if (limit > 0 && resultado.size() > limit) {
                         resultado = new java.util.ArrayList<>(resultado.subList(0, limit));
                     }
                 }
-                catch (NumberFormatException ex)
-                {
-                    // ignora _limit invalido
-                }
+                catch (NumberFormatException ignored) {}
             }
-
             return gson.toJson(resultado);
         });
 
-        // POST /admin/cadastro  (criar empresa)
-        post("/admin/cadastro", (req, res) ->
-        {
+        // POST /admin/cadastro – cria empresa (status pendente)
+        post("/admin/cadastro", (req, res) -> {
             res.type("application/json; charset=utf-8");
-
-            java.util.Map<String, Object> novaEmpresa = gson.fromJson(req.body(), java.util.Map.class);
-            if (novaEmpresa == null)
-            {
+            java.util.Map<String, Object> body = gson.fromJson(req.body(), java.util.Map.class);
+            if (body == null) {
                 res.status(400);
                 return "{\"mensagem\":\"Dados invalidos\"}";
             }
-
-            // id
-            String id = String.valueOf(System.currentTimeMillis());
-            novaEmpresa.put("id", id);
-
-            // se vier responsavel.email, replicar em responsavelEmail e email
-            Object respObj = novaEmpresa.get("responsavel");
-            if (respObj instanceof java.util.Map<?, ?>)
+            Empresa e = new Empresa();
+            // CNPJ obrigatório
+            Object cnpjObj = body.get("cnpj");
+            if (cnpjObj == null)
             {
+                res.status(400);
+                return "{\"mensagem\":\"CNPJ obrigatorio\"}";
+            }
+
+            // Limpa tudo que nao for digito e garante 14 digitos
+            String cnpjRaw   = String.valueOf(cnpjObj);      // ex: "12.345.678/2345-67"
+            String cnpjLimpo = cnpjRaw.replaceAll("\\D", ""); // vira "12345678234567"
+
+            if (cnpjLimpo.length() != 14)
+            {
+                res.status(400);
+                return "{\"mensagem\":\"CNPJ invalido: use 14 digitos\"}";
+            }
+
+            e.setCnpj(cnpjLimpo);
+            
+            // Nome fantasia / Razão social / segmento / endereço
+            Object nf = body.get("nomeFantasia");
+            if (nf == null) { nf = body.get("nome_fantasia"); }
+            e.setNome_fantasia(nf != null ? String.valueOf(nf) : null);
+            Object rz = body.get("razaoSocial");
+            if (rz == null) { rz = body.get("razao_social"); }
+            e.setRazao_social(rz != null ? String.valueOf(rz) : null);
+            Object seg = body.get("segmento");
+            e.setSegmento(seg != null ? String.valueOf(seg) : null);
+            Object end = body.get("endereco");
+            e.setEndereco(end != null ? String.valueOf(end) : null);
+            // Status default = pendente
+            e.setStatus("pendente");
+            // E-mail do responsável
+            String respEmail = null;
+            Object respEmailObj = body.get("responsavelEmail");
+            if (respEmailObj != null) {
+                respEmail = String.valueOf(respEmailObj);
+            }
+            Object respObj = body.get("responsavel");
+            if (respEmail == null && respObj instanceof java.util.Map<?, ?>) {
                 Object inside = ((java.util.Map<?, ?>) respObj).get("email");
-                if (inside != null)
-                {
-                    String emailResp = String.valueOf(inside);
-                    if (!novaEmpresa.containsKey("responsavelEmail"))
-                    {
-                        novaEmpresa.put("responsavelEmail", emailResp);
-                    }
-                    if (!novaEmpresa.containsKey("email"))
-                    {
-                        novaEmpresa.put("email", emailResp);
-                    }
+                if (inside != null) {
+                    respEmail = String.valueOf(inside);
                 }
             }
-
-            // status padrão
-            Object st = novaEmpresa.get("status");
-            if (st == null)
-            {
-                novaEmpresa.put("status", "pendente");
+            e.setResponsavel_email(respEmail);
+            // E-mail de contato: se não vier no body, usa o responsavel
+            String emailContato = null;
+            Object emailObj = body.get("email");
+            if (emailObj != null) {
+                emailContato = String.valueOf(emailObj);
             }
-
-            novaEmpresa.put("dataCadastro", java.time.Instant.now().toString());
-            empresasApi.add(novaEmpresa);
-
-            res.status(200);
+            if (emailContato == null) {
+                emailContato = respEmail;
+            }
+            e.setEmail_contato(emailContato);
+            // Salva no banco
+            EmpresaDAO dao = new EmpresaDAO();
+            boolean ok = dao.insert(e);
+            if (!ok) {
+                res.status(500);
+                return "{\"mensagem\":\"Erro ao salvar empresa\"}";
+            }
             java.util.Map<String, Object> resp = new java.util.HashMap<>();
             resp.put("mensagem", "Cadastro salvo com sucesso");
-            resp.put("id", id);
+            resp.put("id", e.getCnpj());
             return gson.toJson(resp);
         });
 
         // ----------------- Avaliações -----------------
-        get("/api/avaliacoes", (req, res) ->
-        {
+        get("/api/avaliacoes", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return gson.toJson(avaliacoesApi);
         });
 
-        get("/api/avaliacoes/empresa/:empresaId", (req, res) ->
-        {
+        get("/api/avaliacoes/empresa/:empresaId", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String empresaId = req.params(":empresaId");
             java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
-            for (java.util.Map<String, Object> av : avaliacoesApi)
-            {
+            for (java.util.Map<String, Object> av : avaliacoesApi) {
                 Object eid = av.get("empresaId");
-                if (empresaId != null && empresaId.equals(String.valueOf(eid)))
-                {
+                if (empresaId != null && empresaId.equals(String.valueOf(eid))) {
                     out.add(av);
                 }
             }
             return gson.toJson(out);
         });
 
-        post("/api/avaliacoes", (req, res) ->
-        {
+        post("/api/avaliacoes", (req, res) -> {
             res.type("application/json; charset=utf-8");
             java.util.Map<String, Object> nova = gson.fromJson(req.body(), java.util.Map.class);
-            if (nova == null)
-            {
+            if (nova == null) {
                 res.status(400);
                 return "{\"erro\":\"Dados invalidos\"}";
             }
@@ -468,222 +425,165 @@ public class Routes
         });
 
         // -------------- Status de empresas --------------
-        get("/api/empresas/aprovadas", (req, res) ->
-        {
+        get("/api/empresas/aprovadas", (req, res) -> {
             res.type("application/json; charset=utf-8");
+            EmpresaDAO dao = new EmpresaDAO();
             java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object stObj = e.get("status");
-                if (stObj != null)
-                {
-                    String st = String.valueOf(stObj).toLowerCase();
-                    if (st.equals("aprovada") || st.equals("aprovado"))
-                    {
-                        out.add(e);
-                    }
+            for (Empresa e : dao.listar()) {
+                String st = e.getStatus() != null ? e.getStatus().toLowerCase() : "";
+                if (st.startsWith("aprov")) {
+                    out.add(empresaToApi(e));
                 }
             }
             return gson.toJson(out);
         });
 
-        get("/api/empresas/rejeitadas", (req, res) ->
-        {
+        get("/api/empresas/rejeitadas", (req, res) -> {
             res.type("application/json; charset=utf-8");
+            EmpresaDAO dao = new EmpresaDAO();
             java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object stObj = e.get("status");
-                if (stObj != null)
-                {
-                    String st = String.valueOf(stObj).toLowerCase();
-                    if (st.equals("rejeitada") || st.equals("rejeitado"))
-                    {
-                        out.add(e);
-                    }
+            for (Empresa e : dao.listar()) {
+                String st = e.getStatus() != null ? e.getStatus().toLowerCase() : "";
+                if (st.startsWith("rejeit")) {
+                    out.add(empresaToApi(e));
                 }
             }
             return gson.toJson(out);
         });
 
-        get("/api/empresas/pendentes", (req, res) ->
-        {
+        get("/api/empresas/pendentes", (req, res) -> {
             res.type("application/json; charset=utf-8");
+            EmpresaDAO dao = new EmpresaDAO();
             java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object stObj = e.get("status");
-                String st = (stObj == null) ? "" : String.valueOf(stObj).toLowerCase();
-                if (stObj == null || st.equals("pendente") || st.isEmpty())
-                {
-                    out.add(e);
+            for (Empresa e : dao.listar()) {
+                String st = e.getStatus() != null ? e.getStatus().toLowerCase() : "";
+                if (st.isEmpty() || st.equals("pendente")) {
+                    out.add(empresaToApi(e));
                 }
             }
             return gson.toJson(out);
         });
 
-        // PUT /api/empresas/:id/status
-        put("/api/empresas/:id/status", (req, res) ->
-        {
+        // PUT /api/empresas/:id/status – aprovar/rejeitar
+        put("/api/empresas/:id/status", (req, res) -> {
             res.type("application/json; charset=utf-8");
-            String id = req.params(":id");
+            String cnpj = req.params(":id");
             java.util.Map<String, Object> body = gson.fromJson(req.body(), java.util.Map.class);
-
-            if (body == null || !body.containsKey("status"))
-            {
+            if (body == null || !body.containsKey("status")) {
                 res.status(400);
                 return "{\"error\":\"Status invalido\"}";
             }
-
-            String status = String.valueOf(body.get("status"));
-            String sLower = status.toLowerCase();
-            if (!(sLower.startsWith("aprov") || sLower.startsWith("rejeit")))
-            {
+            String novoStatus = String.valueOf(body.get("status"));
+            String sLower = novoStatus.toLowerCase();
+            if (!(sLower.startsWith("aprov") || sLower.startsWith("rejeit"))) {
                 res.status(400);
                 return "{\"error\":\"Status invalido\"}";
             }
-            // normaliza
-            if (sLower.startsWith("aprov"))
-            {
-                status = "aprovada";
-            }
-            else
-            {
-                status = "rejeitada";
-            }
-
-            boolean found = false;
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object eid = e.get("id");
-                if (id != null && id.equals(String.valueOf(eid)))
-                {
-                    e.put("status", status);
-                    e.put("dataAtualizacao", java.time.Instant.now().toString());
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
+            EmpresaDAO dao = new EmpresaDAO();
+            Empresa e = dao.get(cnpj);
+            if (e == null) {
                 res.status(404);
                 return "{\"error\":\"Empresa nao encontrada\"}";
             }
-
-            return "{\"message\":\"Empresa " + status + " com sucesso\"}";
+            if (sLower.startsWith("aprov")) {
+                e.setStatus("aprovada");
+            } else {
+                e.setStatus("rejeitada");
+            }
+            if (!dao.update(e)) {
+                res.status(500);
+                return "{\"error\":\"Falha ao atualizar empresa\"}";
+            }
+            return "{\"message\":\"Empresa atualizada com sucesso\"}";
         });
 
-        // PUT /api/empresas/:id
-        put("/api/empresas/:id", (req, res) ->
-        {
+        // PUT /api/empresas/:id – editar empresa (volta para pendente)
+        put("/api/empresas/:id", (req, res) -> {
             res.type("application/json; charset=utf-8");
-            String id = req.params(":id");
-            java.util.Map<String, Object> dados = gson.fromJson(req.body(), java.util.Map.class);
-            if (dados == null)
-            {
+            String cnpj = req.params(":id");
+            java.util.Map<String, Object> body = gson.fromJson(req.body(), java.util.Map.class);
+            if (body == null) {
                 res.status(400);
                 return "{\"error\":\"Dados invalidos\"}";
             }
-
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object eid = e.get("id");
-                if (id != null && id.equals(String.valueOf(eid)))
-                {
-                    dados.put("id", id);
-                    dados.put("status", "pendente");
-                    if (e.containsKey("dataCadastro"))
-                    {
-                        dados.put("dataCadastro", e.get("dataCadastro"));
-                    }
-                    dados.put("dataAtualizacao", java.time.Instant.now().toString());
-                    e.clear();
-                    e.putAll(dados);
-                    res.status(200);
-                    return gson.toJson(e);
-                }
+            EmpresaDAO dao = new EmpresaDAO();
+            Empresa e = dao.get(cnpj);
+            if (e == null) {
+                res.status(404);
+                return "{\"error\":\"Empresa nao encontrada\"}";
             }
-
-            res.status(404);
-            return "{\"error\":\"Empresa nao encontrada\"}";
+            // Atualiza campos recebidos
+            Object nf = body.get("nomeFantasia");
+            if (nf == null) { nf = body.get("nome_fantasia"); }
+            if (nf != null) { e.setNome_fantasia(String.valueOf(nf)); }
+            Object rz = body.get("razaoSocial");
+            if (rz == null) { rz = body.get("razao_social"); }
+            if (rz != null) { e.setRazao_social(String.valueOf(rz)); }
+            Object seg = body.get("segmento");
+            if (seg != null) { e.setSegmento(String.valueOf(seg)); }
+            Object end = body.get("endereco");
+            if (end != null) { e.setEndereco(String.valueOf(end)); }
+            // Volta para pendente
+            e.setStatus("pendente");
+            // E-mails se vierem no body
+            Object respEmailObj = body.get("responsavelEmail");
+            if (respEmailObj != null) {
+                e.setResponsavel_email(String.valueOf(respEmailObj));
+            }
+            Object emailObj = body.get("email");
+            if (emailObj != null) {
+                e.setEmail_contato(String.valueOf(emailObj));
+            }
+            if (!dao.update(e)) {
+                res.status(500);
+                return "{\"error\":\"Falha ao atualizar empresa\"}";
+            }
+            res.status(200);
+            return gson.toJson(empresaToApi(e));
         });
 
-        // DELETE /api/empresas/:id
-        delete("/api/empresas/:id", (req, res) ->
-        {
+        // DELETE /api/empresas/:id – excluir empresa
+        delete("/api/empresas/:id", (req, res) -> {
             res.type("application/json; charset=utf-8");
-            String id = req.params(":id");
-
-            java.util.Iterator<java.util.Map<String, Object>> it = empresasApi.iterator();
-            while (it.hasNext())
-            {
-                java.util.Map<String, Object> e = it.next();
-                Object eid = e.get("id");
-                if (id != null && id.equals(String.valueOf(eid)))
-                {
-                    it.remove();
-                    res.status(200);
-                    return "{\"message\":\"Empresa excluida com sucesso\"}";
-                }
+            String cnpj = req.params(":id");
+            EmpresaDAO dao = new EmpresaDAO();
+            if (!dao.remove(cnpj)) {
+                res.status(404);
+                return "{\"error\":\"Empresa nao encontrada\"}";
             }
-
-            res.status(404);
-            return "{\"error\":\"Empresa nao encontrada\"}";
+            res.status(200);
+            return "{\"message\":\"Empresa excluida com sucesso\"}";
         });
 
-        // GET /api/empresas/usuario/:email  (usado para mostrar “Minha Empresa”)
-        get("/api/empresas/usuario/:email", (req, res) ->
-        {
+        // GET /api/empresas/usuario/:email – Minha Empresa
+        get("/api/empresas/usuario/:email", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String emailUsr = req.params(":email");
-            if (emailUsr == null)
-            {
-                return "[]";
-            }
+            if (emailUsr == null) { return "[]"; }
             String emailLower = emailUsr.toLowerCase();
-
-            java.util.List<java.util.Map<String, Object>> resultado = new java.util.ArrayList<>();
-
-            for (java.util.Map<String, Object> e : empresasApi)
-            {
-                Object respEmailObj = e.get("responsavelEmail");
-                Object emailObj     = e.get("email");
-                Object respObj      = e.get("responsavel");
-
-                String respLower  = respEmailObj != null ? String.valueOf(respEmailObj).toLowerCase() : null;
-                String mailLower  = emailObj     != null ? String.valueOf(emailObj).toLowerCase()     : null;
-                String insideLower = null;
-
-                if (respObj instanceof java.util.Map<?, ?>)
-                {
-                    Object inside = ((java.util.Map<?, ?>) respObj).get("email");
-                    if (inside != null)
-                    {
-                        insideLower = String.valueOf(inside).toLowerCase();
-                    }
-                }
-
-                if (emailLower.equals(respLower) ||
-                    emailLower.equals(mailLower) ||
-                    emailLower.equals(insideLower))
-                {
-                    resultado.add(e);
+            EmpresaDAO dao = new EmpresaDAO();
+            java.util.List<java.util.Map<String, Object>> out = new java.util.ArrayList<>();
+            for (Empresa e : dao.listar()) {
+                String respLower = e.getResponsavel_email() != null
+                        ? e.getResponsavel_email().toLowerCase()
+                        : null;
+                String mailLower = e.getEmail_contato() != null
+                        ? e.getEmail_contato().toLowerCase()
+                        : null;
+                if (emailLower.equals(respLower) || emailLower.equals(mailLower)) {
+                    out.add(empresaToApi(e));
                 }
             }
-
-            return gson.toJson(resultado);
+            return gson.toJson(out);
         });
 
         // Placeholders para não quebrar o front
-        get("/api/produtos", (req, res) ->
-        {
+        get("/api/produtos", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return "[]";
         });
 
-        get("/api/parceiros", (req, res) ->
-        {
+        get("/api/parceiros", (req, res) -> {
             res.type("application/json; charset=utf-8");
             return "[]";
         });
