@@ -61,3 +61,4 @@ jobs:
           app-name: 'digitalize-g15'
           slot-name: 'Production'
           package: '*.jar'
+
