@@ -25,6 +25,7 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          cd Codigo/src/main/resources/front-end/webapp
           npm install
           npm run build --if-present
           npm run test --if-present
@@ -33,8 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
-
+          path: Codigo/src/main/resources/front-end/webapp
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -62,4 +62,6 @@ jobs:
           app-name: 'digitalize'
           slot-name: 'Production'
           package: .
+
           
+
