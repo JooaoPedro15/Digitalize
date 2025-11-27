@@ -16,7 +16,11 @@ class AuthSystem {
 
     async login(email, senha) {
         try {
-            const response = await fetch('/api/login', {
+            // Obtém a origem da página (protocolo + domínio + porta) para montar
+            // a base da API. Isso garante que a requisição seja enviada ao mesmo
+            // servidor que está servindo o front‑end, independentemente da porta.
+            const API_BASE_URL = window.location.origin;
+            const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -24,6 +28,8 @@ class AuthSystem {
                 body: JSON.stringify({ email, senha })
             });
 
+            // Decodifica a resposta como JSON. Se não for possível converter, a
+            // exceção será capturada pelo bloco catch abaixo.
             const data = await response.json();
 
             if (data.success) {
@@ -42,28 +48,33 @@ class AuthSystem {
 
     async register(userData) {
         try {
+            // Usa a mesma origem da página para construir a URL base. Isso mantém
+            // as chamadas de cadastro consistentes com o host e a porta do front‑end.
+            const API_BASE_URL = window.location.origin;
+
             // Primeiro, verificar se o usuário já existe
-            const existingUsers = await fetch('/api/usuarios');
-            const users = await existingUsers.json();
-            
+            const existingUsersResponse = await fetch(`${API_BASE_URL}/api/usuarios`);
+            const users = await existingUsersResponse.json();
+
             const userExists = users.find(u => u.email === userData.email);
             if (userExists) {
                 return { success: false, message: 'Email já cadastrado' };
             }
 
-            // Criar novo usuário
+            // Criar novo usuário. A lógica de geração de ID e hash da senha deve
+            // permanecer no back‑end para manter a segurança; no entanto, para
+            // compatibilidade com a API atual que armazena a senha em texto puro,
+            // continuamos enviando os dados sem alterações. O Spark irá processar
+            // e salvar a senha de forma segura.
             const newUser = {
-                id: Math.max(...users.map(u => u.id), 0) + 1,
                 nome: userData.nome,
                 email: userData.email,
                 senha: userData.senha,
-                tipo: 'usuario', // Por padrão, novos usuários são do tipo 'usuario'
-                ativo: true,
-                dataCadastro: new Date().toISOString()
+                tipo: 'usuario',
+                ativo: true
             };
 
-            // Simular salvamento (em um sistema real, isso seria feito no backend)
-            const response = await fetch('/api/usuarios', {
+            const response = await fetch(`${API_BASE_URL}/api/usuarios`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -74,7 +85,13 @@ class AuthSystem {
             if (response.ok) {
                 return { success: true, message: 'Usuário cadastrado com sucesso' };
             } else {
-                return { success: false, message: 'Erro ao cadastrar usuário' };
+                // Tenta ler a mensagem de erro retornada pelo backend, caso exista
+                try {
+                    const err = await response.json();
+                    return { success: false, message: err.error || 'Erro ao cadastrar usuário' };
+                } catch (err) {
+                    return { success: false, message: 'Erro ao cadastrar usuário' };
+                }
             }
         } catch (error) {
             console.error('Erro no registro:', error);
@@ -177,4 +194,3 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/';
     }
 });
-
