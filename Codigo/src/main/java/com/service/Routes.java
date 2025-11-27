@@ -9,6 +9,8 @@ import com.dao.EmpresaDAO;
 import com.model.Canal;
 import com.model.Importacao;
 import com.model.Post;
+import com.service.Routes.LoginReq;
+import com.service.Routes.UsuarioApi;
 import com.model.Empresa;
 
 import com.google.gson.Gson;
@@ -110,7 +112,15 @@ public class Routes
     public static void mount()
     {
         // Executa as migrações de schema.
+        try {
+        System.out.println("Tentando migrar banco de dados...");
         SchemaMigrator.migrate();
+        System.out.println("Migração concluída com sucesso!");
+        } catch (Exception e) {
+            System.err.println("ERRO CRÍTICO NA MIGRAÇÃO: " + e.getMessage());
+            e.printStackTrace();
+            // O código continua rodando para carregar as rotas mesmo com erro no banco
+        }
 
         GuiaService guiaService = new GuiaService();
 
