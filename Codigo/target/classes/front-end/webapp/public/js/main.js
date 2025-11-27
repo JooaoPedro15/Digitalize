@@ -2390,7 +2390,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Front-end carregado. Testando integração com o backend...");
 
     // Faz uma requisição GET para o backend (Spark Java)
-    fetch("http://localhost:4567/canais")
+    fetch("/canais")
         .then(res => res.json())              // Converte a resposta em JSON
         .then(data => {
             console.log("Dados recebidos do backend:", data); // Exibe no console
