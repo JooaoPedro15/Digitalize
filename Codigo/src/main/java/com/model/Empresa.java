@@ -2,41 +2,26 @@ package com.model;
 
 import com.google.gson.annotations.SerializedName;
 
-/**
- * Representa uma empresa cadastrada no sistema.
- * Configurada para aceitar JSON do JavaScript (camelCase) e salvar no Banco (snake_case).
- */
 public class Empresa {
 
-    /** CNPJ da empresa (14 dígitos). */
     private String cnpj;
 
-    /** * Nome fantasia.
-     * @SerializedName permite que o Java entenda "nomeFantasia" vindo do JS
-     * e grave na variável "nome_fantasia".
-     */
     @SerializedName(value="nome_fantasia", alternate={"nomeFantasia"})
     private String nome_fantasia;
 
-    /** Razão social. Aceita "razaoSocial" do JSON. */
     @SerializedName(value="razao_social", alternate={"razaoSocial"})
     private String razao_social;
 
     private String segmento;
-
     private String endereco;
-
     private String status;
 
-    /** Aceita "responsavelEmail" do JSON. */
     @SerializedName(value="responsavel_email", alternate={"responsavelEmail", "emailResponsavel"})
     private String responsavel_email;
 
-    /** Aceita "emailContato" do JSON. */
     @SerializedName(value="email_contato", alternate={"emailContato"})
     private String email_contato;
 
-    /** Construtor padrão */
     public Empresa() {}
 
     public Empresa(String cnpj, String nome_fantasia, String razao_social) {
@@ -46,8 +31,7 @@ public class Empresa {
         this.status = "pendente";
     }
 
-    // -------------------- GETTERS / SETTERS --------------------
-
+    // Getters e Setters
     public String getCnpj() { return cnpj; }
     public void setCnpj(String cnpj) { this.cnpj = cnpj; }
 
