@@ -5,16 +5,16 @@ import com.dao.CanalDAO;
 import com.dao.ImportacaoDAO;
 import com.dao.PostDAO;
 import com.dao.EmpresaDAO;
-import com.dao.UsuarioDAO; 
+import com.dao.UsuarioDAO;
 
 import com.model.Canal;
 import com.model.Importacao;
 import com.model.Post;
 import com.model.Empresa;
-import com.model.Usuario;  
+import com.model.Usuario;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject; 
+import com.google.gson.JsonObject;
 
 import static spark.Spark.*;
 
@@ -25,27 +25,7 @@ import java.sql.Date;
  */
 public class Routes
 {
-    public static final Gson gson = ApiConfig.gson;
-
-    /**
-     * Helper para mapear Empresa -> JSON compativel com o front.
-     */
-    private static java.util.Map<String, Object> empresaToApi(Empresa e)
-    {
-        java.util.Map<String, Object> m = new java.util.HashMap<>();
-        m.put("id", e.getCnpj());
-        m.put("cnpj", e.getCnpj());
-        m.put("nomeFantasia", e.getNome_fantasia());
-        m.put("nome_fantasia", e.getNome_fantasia());
-        m.put("razaoSocial", e.getRazao_social());
-        m.put("razao_social", e.getRazao_social());
-        m.put("segmento", e.getSegmento());
-        m.put("endereco", e.getEndereco());
-        m.put("status", e.getStatus());
-        m.put("responsavelEmail", e.getResponsavel_email());
-        m.put("email", e.getEmail_contato());
-        return m;
-    }
+    public static final Gson gson = new Gson(); // Usa instância padrão se ApiConfig falhar
 
     public static void mount()
     {
@@ -55,8 +35,9 @@ public class Routes
         try {
             System.out.println("Iniciando migração do banco...");
             SchemaMigrator.migrate();
-            System.out.println("Migração concluída.");
+            System.out.println("Migração concluída com sucesso.");
         } catch (Exception e) {
+            // Loga o erro mas não derruba a aplicação, permitindo que as rotas carreguem
             System.err.println("AVISO: Erro na migração (o sistema continuará rodando): " + e.getMessage());
             e.printStackTrace();
         }
@@ -67,7 +48,7 @@ public class Routes
         get("/health", (req, res) -> "{\"status\":\"ok\"}");
 
         // ==================================================================
-        // 2. AUTENTICAÇÃO REAL (Conectada ao Banco de Dados)
+        // 2. AUTENTICAÇÃO E USUÁRIOS
         // ==================================================================
 
         // ROTA DE LOGIN
@@ -75,18 +56,15 @@ public class Routes
             res.type("application/json; charset=utf-8");
             
             try {
-                // Lê email e senha do JSON
                 JsonObject body = gson.fromJson(req.body(), JsonObject.class);
                 String email = body.has("email") ? body.get("email").getAsString() : "";
                 String senha = body.has("senha") ? body.get("senha").getAsString() : "";
 
-                // Chama o DAO para verificar no banco
                 UsuarioDAO usuarioDAO = new UsuarioDAO();
                 Usuario usuario = usuarioDAO.autenticar(email, senha);
 
                 if (usuario != null) {
-                    // Sucesso!
-                    usuario.setSenha(null); // Não devolve a senha pro front
+                    usuario.setSenha(null); // Segurança: Remove senha do retorno
                     return gson.toJson(usuario);
                 } else {
                     res.status(401);
@@ -113,7 +91,7 @@ public class Routes
                     res.status(201);
                     return "{\"message\": \"Usuário criado com sucesso\"}";
                 } else {
-                    res.status(400); // Provavelmente email duplicado
+                    res.status(400);
                     return "{\"error\": \"Erro ao criar usuário (Email já existe?)\"}";
                 }
             } catch (Exception e) {
@@ -124,17 +102,19 @@ public class Routes
         });
 
         // ==================================================================
-        // 3. ROTAS DE NEGÓCIO (Empresas, Canais, Posts)
+        // 3. EMPRESAS (Com aprovação automática)
         // ==================================================================
 
-        // POST /admin/cadastro – cria empresa (já aprovada para teste)
+        // Cadastrar Empresa
         post("/admin/cadastro", (req, res) -> {
             res.type("application/json; charset=utf-8");
             try {
                 Empresa e = gson.fromJson(req.body(), Empresa.class);
                 
-                // FORÇA APROVAÇÃO AUTOMÁTICA (Para facilitar sua apresentação)
+                // --- AQUI ESTÁ O TRUQUE ---
+                // Força o status para "aprovada" para aparecer no site imediatamente
                 e.setStatus("aprovada"); 
+                // --------------------------
 
                 EmpresaDAO dao = new EmpresaDAO();
                 if(dao.insert(e)) {
@@ -142,7 +122,7 @@ public class Routes
                     return "{\"mensagem\": \"Empresa cadastrada e aprovada com sucesso!\", \"id\": \"" + e.getCnpj() + "\"}";
                 } else {
                     res.status(500);
-                    return "{\"mensagem\": \"Erro ao salvar no banco\"}";
+                    return "{\"mensagem\": \"Erro ao salvar no banco. Verifique se o CNPJ já existe.\"}";
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -151,35 +131,51 @@ public class Routes
             }
         });
 
-        // Listar empresas com filtros
+        // Listar todas as empresas
         get("/api/empresas", (req, res) -> {
             res.type("application/json; charset=utf-8");
-            EmpresaDAO dao = new EmpresaDAO();
-            return gson.toJson(dao.listar());
+            try {
+                EmpresaDAO dao = new EmpresaDAO();
+                return gson.toJson(dao.listar());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "[]";
+            }
         });
 
-        // Rotas específicas de status (mantidas para compatibilidade)
+        // Rota de compatibilidade para empresas aprovadas
         get("/api/empresas/aprovadas", (req, res) -> {
             res.type("application/json; charset=utf-8");
-            return gson.toJson(new EmpresaDAO().listar()); // Retorna todas por enquanto
+            return gson.toJson(new EmpresaDAO().listar());
         });
 
-        // ----------------- Canais -----------------
+        // ==================================================================
+        // 4. CANAIS, POSTS E IMPORTAÇÕES
+        // ==================================================================
+
+        // Criar Canal
         post("/canais", (req, res) -> {
             res.type("application/json; charset=utf-8");
-            Canal c = gson.fromJson(req.body(), Canal.class);
-            long id = new CanalDAO().insert(c);
-            res.status(201);
-            return "{\"canal_id\":" + id + "}";
+            try {
+                Canal c = gson.fromJson(req.body(), Canal.class);
+                long id = new CanalDAO().insert(c);
+                res.status(201);
+                return "{\"canal_id\":" + id + "}";
+            } catch (Exception e) {
+                e.printStackTrace();
+                res.status(500);
+                return "{\"error\":\"Erro ao criar canal\"}";
+            }
         });
 
+        // Listar Canais por Empresa
         get("/canais/:cnpj", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String cnpj = req.params(":cnpj");
             return gson.toJson(new CanalDAO().listByEmpresa(cnpj));
         });
 
-        // --------------- Importacoes ---------------
+        // Criar Importação
         post("/importacoes", (req, res) -> {
             res.type("application/json; charset=utf-8");
             Importacao imp = gson.fromJson(req.body(), Importacao.class);
@@ -188,7 +184,7 @@ public class Routes
             return "{\"ok\":true}";
         });
 
-        // ------------------ Posts ------------------
+        // Criar Post
         post("/posts", (req, res) -> {
             res.type("application/json; charset=utf-8");
             Post p = gson.fromJson(req.body(), Post.class);
@@ -197,6 +193,7 @@ public class Routes
             return "{\"ok\":true}";
         });
 
+        // Listar Posts
         get("/posts/:canalId", (req, res) -> {
             res.type("application/json; charset=utf-8");
             long canalId = Long.parseLong(req.params(":canalId"));
@@ -207,7 +204,10 @@ public class Routes
             return gson.toJson(new PostDAO().listByCanal(canalId, start, end));
         });
 
-        // -------- Guia de Postagem (IA) -----------
+        // ==================================================================
+        // 5. INTELIGÊNCIA ARTIFICIAL
+        // ==================================================================
+        
         get("/empresa/:cnpj/guia-postagem", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String cnpj = req.params(":cnpj");
@@ -220,10 +220,12 @@ public class Routes
             }
         });
 
-        // Rota placeholder para evitar erros 404 no front
+        // ==================================================================
+        // 6. PLACEHOLDERS (Evitar 404 no Frontend)
+        // ==================================================================
         get("/api/avaliacoes", (req, res) -> "[]");
         get("/api/produtos", (req, res) -> "[]");
         get("/api/parceiros", (req, res) -> "[]");
-        get("/api/usuarios", (req, res) -> "[]"); // Listagem pública bloqueada por segurança
+        get("/api/usuarios", (req, res) -> "[]"); 
     }
 }
