@@ -400,6 +400,70 @@ public class Routes
             return gson.toJson(resp);
         });
 
+        // ROTA DE LOGIN
+        post("/api/login", (req, res) -> {
+            res.type("application/json");
+            
+            // Ler dados do JSON enviado pelo front
+            com.google.gson.JsonObject body = new com.google.gson.Gson().fromJson(req.body(), com.google.gson.JsonObject.class);
+            String email = body.get("email").getAsString();
+            String senha = body.get("senha").getAsString();
+
+            com.dao.UsuarioDAO usuarioDAO = new com.dao.UsuarioDAO();
+            com.model.Usuario usuario = usuarioDAO.autenticar(email, senha);
+
+            if (usuario != null) {
+                // Sucesso! Retorna os dados do usuário (sem a senha)
+                usuario.setSenha(null); 
+                return new com.google.gson.Gson().toJson(usuario);
+            } else {
+                res.status(401); // Não autorizado
+                return "{\"error\": \"Email ou senha incorretos\"}";
+            }
+        });
+        
+        // ROTA DE LOGIN
+        post("/api/login", (req, res) -> {
+            res.type("application/json");
+            
+            // Ler dados do JSON enviado pelo front
+            com.google.gson.JsonObject body = new com.google.gson.Gson().fromJson(req.body(), com.google.gson.JsonObject.class);
+            String email = body.get("email").getAsString();
+            String senha = body.get("senha").getAsString();
+
+            com.dao.UsuarioDAO usuarioDAO = new com.dao.UsuarioDAO();
+            com.model.Usuario usuario = usuarioDAO.autenticar(email, senha);
+
+            if (usuario != null) {
+                // Sucesso! Retorna os dados do usuário (sem a senha)
+                usuario.setSenha(null); 
+                return new com.google.gson.Gson().toJson(usuario);
+            } else {
+                res.status(401); // Não autorizado
+                return "{\"error\": \"Email ou senha incorretos\"}";
+            }
+        });
+
+        // ROTA DE CADASTRO DE USUÁRIO
+        post("/api/usuarios", (req, res) -> {
+            res.type("application/json");
+            com.model.Usuario u = new com.google.gson.Gson().fromJson(req.body(), com.model.Usuario.class);
+            
+            // Define padrão se vier vazio
+            if(u.getTipo() == null) u.setTipo("usuario");
+            
+            com.dao.UsuarioDAO dao = new com.dao.UsuarioDAO();
+            if (dao.insert(u)) {
+                res.status(201);
+                return "{\"message\": \"Usuário criado com sucesso\"}";
+            } else {
+                res.status(500);
+                return "{\"error\": \"Erro ao criar usuário\"}";
+            }
+        });
+        
+        // ... (fim do método mount)
+
         // ----------------- Avaliações -----------------
         get("/api/avaliacoes", (req, res) -> {
             res.type("application/json; charset=utf-8");
