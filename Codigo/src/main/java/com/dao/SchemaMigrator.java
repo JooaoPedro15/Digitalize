@@ -38,6 +38,7 @@ public class SchemaMigrator
                     "razao_social VARCHAR(120) NOT NULL, " +
                     "segmento VARCHAR(40), " +
                     "endereco VARCHAR(200), " +
+                    "responsavel_email VARCHAR(150), " +
                     "status VARCHAR(12) DEFAULT 'ATIVA' CHECK (status IN ('ATIVA','INATIVA'))" + // Controle de status
                     ");"
                 );
