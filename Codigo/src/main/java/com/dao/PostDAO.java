@@ -28,7 +28,7 @@ public class PostDAO {
      */
     public void upsert(Post p) throws SQLException {
         String sql = "INSERT INTO midiasocial.post " +
-                     "(canal_id, data_hora, legenda, duracao, alcance, views, likes, shares, comentarios, saves, imp_arquivo_original, imp_periodo_inicio) " +
+                     "(canal_id, data_hora, legenda, duracao, alcance, views, likes, shares, comentarios, saves, importacao_arquivo_original, importacao_periodo_inicio) " +
                      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) " +
                      "ON CONFLICT (canal_id, data_hora, legenda) DO UPDATE SET " +
                      "duracao = EXCLUDED.duracao, " +
@@ -38,8 +38,8 @@ public class PostDAO {
                      "shares = EXCLUDED.shares, " +
                      "comentarios = EXCLUDED.comentarios, " +
                      "saves = EXCLUDED.saves, " +
-                     "imp_arquivo_original = EXCLUDED.imp_arquivo_original, " +
-                     "imp_periodo_inicio = EXCLUDED.imp_periodo_inicio";
+                     "importacao_arquivo_original = EXCLUDED.importacao_arquivo_original, " +
+                     "importacao_periodo_inicio = EXCLUDED.importacao_periodo_inicio";
 
         try (Connection conn = DAO.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -91,8 +91,8 @@ public class PostDAO {
                     p.setShares(rs.getInt("shares"));
                     p.setComentarios(rs.getInt("comentarios"));
                     p.setSaves(rs.getInt("saves"));
-                    p.setImp_arquivo_original(rs.getString("imp_arquivo_original"));
-                    p.setImp_periodo_inicio(rs.getDate("imp_periodo_inicio"));
+                    p.setImp_arquivo_original(rs.getString("importacao_arquivo_original"));
+                    p.setImp_periodo_inicio(rs.getDate("importacao_periodo_inicio"));
                     out.add(p);
                 }
             }
@@ -157,8 +157,8 @@ public class PostDAO {
                     p.setShares(rs.getInt("shares"));
                     p.setComentarios(rs.getInt("comentarios"));
                     p.setSaves(rs.getInt("saves"));
-                    p.setImp_arquivo_original(rs.getString("imp_arquivo_original"));
-                    p.setImp_periodo_inicio(rs.getDate("imp_periodo_inicio"));
+                    p.setImp_arquivo_original(rs.getString("importacao_arquivo_original"));
+                    p.setImp_periodo_inicio(rs.getDate("importacao_periodo_inicio"));
                     return p;
                 }
             }
@@ -189,8 +189,8 @@ public class PostDAO {
                 p.setShares(rs.getInt("shares"));
                 p.setComentarios(rs.getInt("comentarios"));
                 p.setSaves(rs.getInt("saves"));
-                p.setImp_arquivo_original(rs.getString("imp_arquivo_original"));
-                p.setImp_periodo_inicio(rs.getDate("imp_periodo_inicio"));
+                p.setImp_arquivo_original(rs.getString("importacao_arquivo_original"));
+                p.setImp_periodo_inicio(rs.getDate("importacao_periodo_inicio"));
                 out.add(p);
             }
         }

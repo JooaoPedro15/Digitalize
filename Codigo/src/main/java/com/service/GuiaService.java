@@ -148,8 +148,9 @@ public class GuiaService
             "FROM midiasocial.post p " +
             "JOIN midiasocial.canal c ON c.canal_id = p.canal_id " +
             "WHERE c.empresa_cnpj = ? " +
-            "  AND p.data_hora >= ?::timestamp " +
-            "  AND p.data_hora <  (?::timestamp + INTERVAL '1 day') " +
+            "  AND p.data_hora >= ?::date " +
+            "  AND p.data_hora < (?::date + INTERVAL '1 day') " +
+
             "ORDER BY p.data_hora DESC";
 
         ArrayList<PRow> out = new ArrayList<>();
