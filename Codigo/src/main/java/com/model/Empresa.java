@@ -1,58 +1,44 @@
 package com.model;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Representa uma empresa cadastrada no sistema.
- * Cada empresa é identificada unicamente pelo seu CNPJ,
- * seguindo o mesmo padrão definido na tabela "empresa" do banco.
- *
- * Esta entidade é usada pelos serviços e controllers
- * para consultas, cadastros e vinculação com canais de mídia social.
+ * Configurada para aceitar JSON do JavaScript (camelCase) e salvar no Banco (snake_case).
  */
 public class Empresa {
 
-    /** CNPJ da empresa (14 dígitos, somente números). */
+    /** CNPJ da empresa (14 dígitos). */
     private String cnpj;
 
-    /** Nome fantasia da empresa — usado para exibição e organização. */
+    /** * Nome fantasia.
+     * @SerializedName permite que o Java entenda "nomeFantasia" vindo do JS
+     * e grave na variável "nome_fantasia".
+     */
+    @SerializedName(value="nome_fantasia", alternate={"nomeFantasia"})
     private String nome_fantasia;
 
-    /** Razão social da empresa — nome jurídico oficial. */
+    /** Razão social. Aceita "razaoSocial" do JSON. */
+    @SerializedName(value="razao_social", alternate={"razaoSocial"})
     private String razao_social;
 
-    /** Segmento de mercado ou área de atuação. */
     private String segmento;
 
-    /** Endereço cadastrado da empresa. */
     private String endereco;
 
-    /**
-     * Status da empresa no fluxo de aprovação:
-     *  - "pendente" → cadastrada aguardando aprovação
-     *  - "aprovada" → aprovada pelo administrador
-     *  - "rejeitada" → rejeitada pelo administrador
-     *  - "ATIVA"/"INATIVA" → usados somente em dados legados
-     */
     private String status;
 
-    /**
-     * E-mail da pessoa responsável pelo cadastro da empresa.
-     * Utilizado para vincular a empresa ao usuário logado (Minha Empresa).
-     */
+    /** Aceita "responsavelEmail" do JSON. */
+    @SerializedName(value="responsavel_email", alternate={"responsavelEmail", "emailResponsavel"})
     private String responsavel_email;
 
-    /**
-     * E-mail principal de contato da empresa.
-     * Pode coincidir com o e-mail do responsável.
-     */
+    /** Aceita "emailContato" do JSON. */
+    @SerializedName(value="email_contato", alternate={"emailContato"})
     private String email_contato;
 
-    /** Construtor padrão (necessário para frameworks e JSON). */
+    /** Construtor padrão */
     public Empresa() {}
 
-    /**
-     * Construtor rápido – define CNPJ, nome fantasia e razão social,
-     * e inicia status como "pendente".
-     */
     public Empresa(String cnpj, String nome_fantasia, String razao_social) {
         this.cnpj = cnpj;
         this.nome_fantasia = nome_fantasia;
