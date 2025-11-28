@@ -272,7 +272,30 @@ public class Routes
                 return "{\"error\": \"Empresa não encontrada\"}";
             }
         });
-        
+        // Buscar empresas por email do responsável
+        get("/api/empresas/usuario/:email", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            String email = req.params(":email");
+            
+            // Aqui vamos filtrar a lista completa (gambiarra rápida funcional)
+            // O ideal seria um método específico no DAO, mas isso resolve agora.
+            try {
+                EmpresaDAO dao = new EmpresaDAO();
+                java.util.List<Empresa> todas = dao.listar();
+                java.util.List<Empresa> filtradas = new java.util.ArrayList<>();
+                
+                for (Empresa e : todas) {
+                    if (e.getResponsavel_email() != null && e.getResponsavel_email().equalsIgnoreCase(email)) {
+                        filtradas.add(e);
+                    }
+                }
+                return gson.toJson(filtradas);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "[]";
+            }
+        });
+
         // ==================================================================
         // 5. INTELIGÊNCIA ARTIFICIAL
         // ==================================================================
