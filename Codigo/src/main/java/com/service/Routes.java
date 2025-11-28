@@ -203,7 +203,76 @@ public class Routes
             Date end   = (endParam != null) ? Date.valueOf(endParam) : new Date(System.currentTimeMillis());
             return gson.toJson(new PostDAO().listByCanal(canalId, start, end));
         });
+        // ==================================================================
+        // ROTAS DE GERENCIAMENTO (ADMIN) - ADICIONE ISTO!
+        // ==================================================================
 
+        // Atualizar Status (Aprovar/Rejeitar)
+        put("/api/empresas/:id/status", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            String id = req.params(":id"); // Isso é o CNPJ
+            
+            try {
+                JsonObject body = gson.fromJson(req.body(), JsonObject.class);
+                String novoStatus = body.get("status").getAsString();
+                
+                EmpresaDAO dao = new EmpresaDAO();
+                // Busca a empresa existente
+                Empresa e = dao.get(id);
+                
+                if (e != null) {
+                    e.setStatus(novoStatus);
+                    if (dao.update(e)) {
+                        return "{\"message\": \"Status atualizado com sucesso\"}";
+                    }
+                }
+                res.status(404);
+                return "{\"error\": \"Empresa não encontrada ou erro ao atualizar\"}";
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                res.status(500);
+                return "{\"error\": \"Erro interno\"}";
+            }
+        });
+
+        // Atualizar Empresa Completa (Edição)
+        put("/api/empresas/:id", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            String id = req.params(":id");
+            try {
+                Empresa e = gson.fromJson(req.body(), Empresa.class);
+                e.setCnpj(id); // Garante que o ID da URL prevalece
+                
+                // Se o status não vier, mantém pendente ou o que estava
+                if(e.getStatus() == null) e.setStatus("pendente");
+
+                EmpresaDAO dao = new EmpresaDAO();
+                if (dao.update(e)) {
+                    return "{\"message\": \"Empresa atualizada\"}";
+                } else {
+                    res.status(404);
+                    return "{\"error\": \"Empresa não encontrada\"}";
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                res.status(500);
+                return "{\"error\": \"Erro ao atualizar\"}";
+            }
+        });
+
+        // Excluir Empresa
+        delete("/api/empresas/:id", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            String id = req.params(":id");
+            EmpresaDAO dao = new EmpresaDAO();
+            if (dao.remove(id)) {
+                return "{\"message\": \"Empresa excluída\"}";
+            } else {
+                res.status(404);
+                return "{\"error\": \"Empresa não encontrada\"}";
+            }
+        });
+        
         // ==================================================================
         // 5. INTELIGÊNCIA ARTIFICIAL
         // ==================================================================

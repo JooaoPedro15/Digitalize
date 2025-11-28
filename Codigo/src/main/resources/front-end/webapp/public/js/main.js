@@ -2,7 +2,7 @@
 
 class DigitalizeApp {
     constructor() {
-        this.apiBase = ''; // Vazio pois estamos no mesmo domínio
+        this.apiBase = ''; 
         this.currentPage = 'home';
         this.data = {
             empresas: [],
@@ -12,8 +12,9 @@ class DigitalizeApp {
             avaliacoes: []
         };
         
-        // Cache para o mapa
+        // Cache para não ficar chamando a API de mapa toda hora pro mesmo endereço
         this.coordenadasCache = new Map();
+        this.map = null; // Referência para o mapa Leaflet
         
         this.init();
     }
@@ -22,7 +23,6 @@ class DigitalizeApp {
         await this.loadData();
         this.setupEventListeners();
         
-        // Verificar hash inicial
         const hash = window.location.hash.substring(1);
         if (hash) {
             this.currentPage = hash;
@@ -36,7 +36,6 @@ class DigitalizeApp {
         try {
             const response = await fetch(`${this.apiBase}${endpoint}`);
             if (!response.ok) {
-                // Se der 404 ou erro, retorna array vazio para não quebrar a tela
                 console.warn(`Aviso: ${endpoint} retornou ${response.status}`);
                 return [];
             }
@@ -49,7 +48,6 @@ class DigitalizeApp {
 
     async loadData() {
         try {
-            // Carrega tudo em paralelo
             const [empresas, produtos, usuarios, parceiros, avaliacoes] = await Promise.all([
                 this.fetchData('/api/empresas'),
                 this.fetchData('/api/produtos'),
@@ -67,9 +65,7 @@ class DigitalizeApp {
     }
 
     setupEventListeners() {
-        // Navegação por cliques
         document.addEventListener('click', (e) => {
-            // Verifica se clicou em um link de navegação ou num filho dele
             const link = e.target.closest('[data-page]');
             if (link) {
                 e.preventDefault();
@@ -77,7 +73,6 @@ class DigitalizeApp {
             }
         });
 
-        // Formulário de Cadastro (Event Delegation)
         document.addEventListener('submit', (e) => {
             if (e.target.matches('#cadastro-form')) {
                 e.preventDefault();
@@ -85,32 +80,22 @@ class DigitalizeApp {
             }
         });
 
-        // Filtros e pesquisa
         document.addEventListener('input', (e) => {
             if (e.target.matches('#search-input')) {
                 this.handleSearch(e.target.value);
             }
         });
 
-        // Escutar mudanças no hash da URL (botão voltar do navegador)
         window.addEventListener('hashchange', () => {
             const newPage = window.location.hash.substring(1) || 'home';
-            this.navigateTo(newPage, false); // false = não atualizar hash de novo
+            this.navigateTo(newPage, false);
         });
     }
 
     navigateTo(page, updateHash = true) {
-        // Verificar páginas externas
-        if (page === 'login') {
-            window.location.href = 'login.html';
-            return;
-        }
-        if (page === 'admin') {
-            window.location.href = 'admin.html';
-            return;
-        }
+        if (page === 'login') { window.location.href = 'login.html'; return; }
+        if (page === 'admin') { window.location.href = 'admin.html'; return; }
 
-        // Verificar autenticação para páginas restritas
         if ((page === 'cadastro' || page === 'minha-empresa' || page === 'favoritos') && !this.isUserLoggedIn()) {
             alert('Você precisa estar logado para acessar esta página.');
             window.location.href = 'login.html';
@@ -125,7 +110,6 @@ class DigitalizeApp {
             window.location.hash = page;
         }
         
-        // Rolar para o topo
         window.scrollTo(0, 0);
     }
 
@@ -148,20 +132,16 @@ class DigitalizeApp {
         const minhaEmpresaLinks = document.querySelectorAll('[data-page="minha-empresa"]');
         const adminLinks = document.querySelectorAll('a[href="admin.html"]');
         
-        // Esconder tudo por padrão
         cadastroLinks.forEach(l => l.style.display = 'none');
         minhaEmpresaLinks.forEach(l => l.style.display = 'none');
         adminLinks.forEach(l => l.style.display = 'none');
 
         if (user) {
             const isAdmin = user.tipo === 'admin' || user.tipo === 'administrador';
-            
             if (isAdmin) {
-                // Admin vê botão Admin e Cadastro
                 adminLinks.forEach(l => l.style.display = 'inline');
                 cadastroLinks.forEach(l => l.style.display = 'inline');
             } else {
-                // Usuário comum: verificamos se já tem empresa
                 this.verificarEmpresaParaNavegacao(user, cadastroLinks, minhaEmpresaLinks);
             }
         }
@@ -169,10 +149,7 @@ class DigitalizeApp {
 
     async verificarEmpresaParaNavegacao(user, cadastroLinks, minhaEmpresaLinks) {
         try {
-            // Tenta achar empresa do usuário na lista local ou busca no server
             let temEmpresa = this.data.empresas.some(e => e.responsavelEmail === user.email);
-            
-            // Se não achou na lista local (pode estar desatualizada), busca no server
             if (!temEmpresa) {
                 const response = await fetch(`/api/empresas/usuario/${user.email}`);
                 if (response.ok) {
@@ -180,14 +157,12 @@ class DigitalizeApp {
                     temEmpresa = empresas.length > 0;
                 }
             }
-
             if (temEmpresa) {
                 minhaEmpresaLinks.forEach(l => l.style.display = 'inline');
             } else {
                 cadastroLinks.forEach(l => l.style.display = 'inline');
             }
         } catch (error) {
-            // Em caso de erro, libera cadastro
             cadastroLinks.forEach(l => l.style.display = 'inline');
         }
     }
@@ -195,38 +170,56 @@ class DigitalizeApp {
     renderCurrentPage() {
         const content = document.getElementById('main-content');
         if (!content) return;
-
-        // Limpa o conteúdo antes de renderizar
         content.innerHTML = '';
 
         switch (this.currentPage) {
-            case 'home':
-                this.renderHomePage(content);
-                break;
-            case 'empresas':
-                this.renderEmpresasPage(content);
-                break;
-            case 'cadastro':
-                this.renderCadastroPage(content);
-                break;
-            case 'mapa':
-                this.renderMapaPage(content);
-                break;
-            case 'minha-empresa':
-                this.renderMinhaEmpresaPage(content);
-                break;
-            case 'avaliacoes':
-                this.renderAvaliacoesPage(content);
-                break;
-            case 'favoritos':
-                this.renderFavoritosPage(content);
-                break;
-            default:
-                this.renderHomePage(content);
+            case 'home': this.renderHomePage(content); break;
+            case 'empresas': this.renderEmpresasPage(content); break;
+            case 'cadastro': this.renderCadastroPage(content); break;
+            case 'mapa': this.renderMapaPage(content); break; // AQUI VAI O MAPA
+            case 'minha-empresa': this.renderMinhaEmpresaPage(content); break;
+            case 'avaliacoes': this.renderAvaliacoesPage(content); break;
+            case 'favoritos': this.renderFavoritosPage(content); break;
+            default: this.renderHomePage(content);
         }
     }
 
-    // --- RENDERIZADORES DE PÁGINA ---
+    // --- FUNÇÃO PARA CONVERTER ENDEREÇO EM COORDENADAS ---
+    async obterCoordenadas(empresa) {
+        let queryEndereco = "";
+
+        if (typeof empresa.endereco === 'string') {
+            queryEndereco = empresa.endereco;
+        } else if (empresa.endereco && typeof empresa.endereco === 'object') {
+            const cidade = empresa.endereco.cidade || empresa.cidade;
+            const estado = empresa.endereco.estado || empresa.endereco.uf || empresa.estado;
+            if (cidade) queryEndereco = `${cidade}, ${estado || ''}, Brazil`;
+        }
+
+        if (!queryEndereco || queryEndereco.length < 3) return null;
+
+        if (this.coordenadasCache.has(queryEndereco)) {
+            return this.coordenadasCache.get(queryEndereco);
+        }
+
+        try {
+            // Usa OpenStreetMap (Nominatim) para geocoding
+            const query = encodeURIComponent(queryEndereco);
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                const coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                this.coordenadasCache.set(queryEndereco, coords);
+                return coords;
+            }
+        } catch (error) {
+            console.error('Erro ao geocodificar:', queryEndereco);
+        }
+        return null;
+    }
+
+    // --- RENDERIZADORES ---
 
     renderHomePage(container) {
         container.innerHTML = `
@@ -237,7 +230,6 @@ class DigitalizeApp {
                         <p class="lead">Plataforma unificada para gestão de empresas e serviços digitais</p>
                     </div>
                 </div>
-
                 <div class="container">
                     <div class="cards-grid">
                         <div class="card p-4">
@@ -245,13 +237,11 @@ class DigitalizeApp {
                             <p>Visualize todas as empresas cadastradas na plataforma</p>
                             <button data-page="empresas" class="btn btn-primary w-100">Ver Empresas</button>
                         </div>
-
                         <div class="card p-4">
                             <h3>📝 Cadastrar</h3>
                             <p>Cadastre sua empresa na plataforma</p>
                             <button data-page="cadastro" class="btn btn-secondary w-100">Cadastrar Empresa</button>
                         </div>
-
                         <div class="card p-4">
                             <h3>🗺️ Mapa</h3>
                             <p>Visualize empresas no mapa interativo</p>
@@ -264,14 +254,10 @@ class DigitalizeApp {
     }
 
     renderEmpresasPage(container) {
-        // Filtrar empresas (aceita aprovada ou aprovado)
-        // OBS: Se quiser testar vendo TODAS, remova o .filter temporariamente
         const empresasVisiveis = this.data.empresas.filter(empresa => 
             !empresa.status || empresa.status.toLowerCase().includes('aprovad') || empresa.status === 'ATIVA'
         );
-
-        const listaHtml = this.renderEmpresasCards(empresasVisiveis);
-
+        
         container.innerHTML = `
             <div class="section fade-in">
                 <div class="container">
@@ -279,33 +265,25 @@ class DigitalizeApp {
                         <h2>Empresas Cadastradas</h2>
                         <p>Total de ${empresasVisiveis.length} empresas disponíveis</p>
                     </div>
-
                     <div class="form-group mb-4">
                         <input type="text" id="search-input" placeholder="Pesquisar por nome ou segmento..." class="form-control">
                     </div>
-
                     <div class="cards-grid" id="empresas-grid">
-                        ${listaHtml}
+                        ${this.renderEmpresasCards(empresasVisiveis)}
                     </div>
-
-                    ${empresasVisiveis.length === 0 ? 
-                        '<div class="alert alert-warning">Nenhuma empresa encontrada.</div>' : ''}
                 </div>
             </div>
         `;
-
         this.setupFavoritoButtons();
     }
 
     renderEmpresasCards(empresas) {
         return empresas.map(empresa => {
-            // Normalização de campos (Backend Java vs JSON)
             const nome = empresa.nomeFantasia || empresa.nome_fantasia || empresa.nome || 'Sem Nome';
             const razao = empresa.razaoSocial || empresa.razao_social || 'Não informado';
             const cnpj = empresa.cnpj || 'Não informado';
             const segmento = empresa.segmento || 'Não informado';
             
-            // O endereço agora deve vir como STRING do Java, mas tratamos caso venha objeto
             let enderecoStr = 'Não informado';
             if (typeof empresa.endereco === 'string') {
                 enderecoStr = empresa.endereco;
@@ -329,7 +307,6 @@ class DigitalizeApp {
                     <p class="mb-1"><strong>CNPJ:</strong> ${cnpj}</p>
                     <p class="mb-1"><strong>Endereço:</strong> ${enderecoStr}</p>
                     <p class="mb-3"><strong>Email:</strong> ${empresa.email_contato || empresa.emailContato || 'Não informado'}</p>
-                    
                     <button class="btn btn-outline-danger btn-sm favorito-btn w-100" data-empresa-id="${empresa.id || empresa.cnpj}">
                         ❤️ Favoritar
                     </button>
@@ -339,18 +316,73 @@ class DigitalizeApp {
         }).join('');
     }
 
+    // --- RENDERIZAÇÃO DO MAPA (CORRIGIDA) ---
+    async renderMapaPage(container) {
+        // Cria o container do mapa
+        container.innerHTML = `
+            <div class="section fade-in">
+                <div class="container">
+                    <h2>Mapa de Empresas</h2>
+                    <p class="mb-3">Visualize a localização das empresas cadastradas.</p>
+                    <div id="map" style="height: 500px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+                </div>
+            </div>
+        `;
+
+        // Espera o DOM atualizar
+        setTimeout(async () => {
+            // Inicializa o mapa (Centro no Brasil)
+            if (this.map) {
+                this.map.remove(); // Limpa mapa anterior se existir
+            }
+            
+            // Certifique-se que o CSS do Leaflet está no index.html
+            if (typeof L === 'undefined') {
+                container.innerHTML += '<div class="alert alert-danger">Erro: Biblioteca Leaflet não encontrada.</div>';
+                return;
+            }
+
+            this.map = L.map('map').setView([-15.793889, -47.882778], 4);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(this.map);
+
+            // Adicionar marcadores
+            const empresasAprovadas = this.data.empresas.filter(e => 
+                !e.status || e.status.toLowerCase().includes('aprovad') || e.status === 'ATIVA'
+            );
+
+            let marcadoresAdicionados = 0;
+
+            for (const empresa of empresasAprovadas) {
+                const coords = await this.obterCoordenadas(empresa);
+                if (coords) {
+                    const nome = empresa.nomeFantasia || empresa.nome || 'Empresa';
+                    const segmento = empresa.segmento || '';
+                    
+                    L.marker([coords.lat, coords.lng])
+                        .addTo(this.map)
+                        .bindPopup(`<b>${nome}</b><br>${segmento}<br>${empresa.endereco}`);
+                    
+                    marcadoresAdicionados++;
+                }
+            }
+
+            if (marcadoresAdicionados === 0) {
+                console.log("Nenhuma empresa com endereço válido encontrada para o mapa.");
+            }
+        }, 100);
+    }
+
     renderCadastroPage(container) {
-        // O formulário de cadastro usa a mesma estrutura que você já tinha
-        // Apenas recriei a estrutura HTML limpa aqui
         container.innerHTML = `
             <div class="section fade-in">
                 <div class="container">
                     <div class="page-header mb-4">
                         <h2>Cadastrar Empresa</h2>
                     </div>
-
                     <div id="cadastro-message" class="alert d-none"></div>
-
                     <form id="cadastro-form" class="card p-4">
                         <h4 class="mb-3">Dados da Empresa</h4>
                         <div class="row mb-3">
@@ -363,7 +395,6 @@ class DigitalizeApp {
                                 <input type="text" name="razaoSocial" class="form-control" required>
                             </div>
                         </div>
-
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">CNPJ *</label>
@@ -381,7 +412,6 @@ class DigitalizeApp {
                                 </select>
                             </div>
                         </div>
-
                         <h4 class="mb-3 mt-4">Endereço</h4>
                         <div class="row mb-3">
                             <div class="col-md-3">
@@ -406,10 +436,9 @@ class DigitalizeApp {
                                     <option value="MG">MG</option>
                                     <option value="RJ">RJ</option>
                                     <option value="BA">BA</option>
-                                    </select>
+                                </select>
                             </div>
                         </div>
-
                         <h4 class="mb-3 mt-4">Contato</h4>
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -425,12 +454,10 @@ class DigitalizeApp {
                             <label class="form-label">Telefone *</label>
                             <input type="tel" id="responsavelTelefone" name="responsavelTelefone" class="form-control" required>
                         </div>
-
                         <div class="mb-3">
                             <label class="form-label">Observações (IA)</label>
                             <textarea name="observacoes" class="form-control" rows="3" placeholder="Gere uma descrição com IA..."></textarea>
                         </div>
-
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary">Cadastrar Empresa</button>
                         </div>
@@ -438,40 +465,33 @@ class DigitalizeApp {
                 </div>
             </div>
         `;
-        
         this.setupFormMasks();
     }
 
-    // --- LOGICA DE ENVIO DO CADASTRO (A CORREÇÃO PRINCIPAL) ---
     async handleCadastroSubmit(event) {
         const form = event.target;
         const formData = new FormData(form);
         const data = {};
-
-        // Converter FormData para objeto
         formData.forEach((value, key) => data[key] = value);
 
-        // CORREÇÃO CRÍTICA: Montar endereço como STRING única
-        // O Java espera String no campo endereco, não JSON.
+        // FORMATAÇÃO DO ENDEREÇO COMO STRING ÚNICA (CORREÇÃO)
         const enderecoCompleto = `${data.rua}, ${data.cidade} - ${data.estado}. CEP: ${data.cep}`;
         
-        // Objeto final para enviar
         const empresaParaEnviar = {
             nomeFantasia: data.nomeFantasia,
             razaoSocial: data.razaoSocial,
-            cnpj: data.cnpj.replace(/\D/g, ''), // Remove pontos e traços para o banco
+            cnpj: data.cnpj.replace(/\D/g, ''), 
             segmento: data.segmento,
-            endereco: enderecoCompleto, // Envia a string formatada
+            endereco: enderecoCompleto, 
             responsavelNome: data.responsavelNome,
             responsavelEmail: data.responsavelEmail,
-            emailContato: data.responsavelEmail, // Reutiliza email
+            emailContato: data.responsavelEmail,
             responsavelTelefone: data.responsavelTelefone,
             observacoes: data.observacoes
         };
 
         try {
             const btn = form.querySelector('button[type="submit"]');
-            const txtOriginal = btn.innerText;
             btn.innerText = "Enviando...";
             btn.disabled = true;
 
@@ -484,7 +504,7 @@ class DigitalizeApp {
             if (response.ok) {
                 alert('Empresa cadastrada e aprovada com sucesso!');
                 form.reset();
-                await this.loadData(); // Recarrega para aparecer na lista
+                await this.loadData();
                 this.navigateTo('empresas');
             } else {
                 const err = await response.json();
@@ -506,7 +526,6 @@ class DigitalizeApp {
             (e.nomeFantasia || '').toLowerCase().includes(termo) ||
             (e.segmento || '').toLowerCase().includes(termo)
         );
-        
         const grid = document.getElementById('empresas-grid');
         if(grid) {
             grid.innerHTML = this.renderEmpresasCards(filtradas);
@@ -514,10 +533,7 @@ class DigitalizeApp {
         }
     }
 
-    // --- MÉTODOS AUXILIARES ---
-
     setupFormMasks() {
-        // Exemplo simples de máscara
         const cnpj = document.getElementById('cnpj');
         if(cnpj) {
             cnpj.addEventListener('input', e => {
@@ -539,41 +555,14 @@ class DigitalizeApp {
         });
     }
 
-    renderMapaPage(container) {
-        container.innerHTML = '<div class="container mt-5"><h2>Mapa</h2><p>Funcionalidade de mapa (Leaflet) deve ser carregada aqui.</p></div>';
-        // Aqui você pode reativar seu código do Leaflet se quiser
-    }
+    renderMinhaEmpresaPage(container) { container.innerHTML = '<div class="container mt-5"><h2>Minha Empresa</h2><p>Detalhes aqui.</p></div>'; }
+    renderAvaliacoesPage(container) { container.innerHTML = '<div class="container mt-5"><h2>Avaliações</h2><p>Lista de avaliações.</p></div>'; }
+    renderFavoritosPage(container) { container.innerHTML = '<div class="container mt-5"><h2>Favoritos</h2><p>Seus favoritos.</p></div>'; }
 
-    renderMinhaEmpresaPage(container) {
-        container.innerHTML = '<div class="container mt-5"><h2>Minha Empresa</h2><p>Detalhes da sua empresa apareceriam aqui.</p></div>';
-    }
-
-    renderAvaliacoesPage(container) {
-        container.innerHTML = '<div class="container mt-5"><h2>Avaliações</h2><p>Lista de avaliações aqui.</p></div>';
-    }
-
-    renderFavoritosPage(container) {
-        container.innerHTML = '<div class="container mt-5"><h2>Favoritos</h2><p>Seus favoritos aqui.</p></div>';
-    }
-
-    showMessage(msg, type) {
-        const box = document.getElementById('cadastro-message');
-        if(box) {
-            box.innerText = msg;
-            box.className = `alert alert-${type === 'error' ? 'danger' : 'success'} d-block`;
-            setTimeout(() => box.className = 'alert d-none', 5000);
-        } else {
-            alert(msg);
-        }
-    }
-
-    showError(msg) {
-        this.showMessage(msg, 'error');
-    }
+    showMessage(msg, type) { alert(msg); }
+    showError(msg) { alert(msg); }
 }
 
-// Inicialização
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Iniciando DigitalizeApp Unificado...");
     window.digitalizeApp = new DigitalizeApp();
 });
