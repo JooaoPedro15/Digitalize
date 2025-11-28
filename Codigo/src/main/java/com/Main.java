@@ -37,7 +37,7 @@ public class Main {
     }
 
     /**
-     * Obtém a porta utilizada pelo servidor.
+     * Obtém a porta utilizada pelo servidor..
      * Caso a variável de ambiente "PORT" não esteja definida,
      * utiliza 8080 como porta padrão.
      */
