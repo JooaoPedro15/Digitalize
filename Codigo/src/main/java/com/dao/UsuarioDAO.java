@@ -2,12 +2,15 @@ package com.dao;
 
 import com.model.Usuario;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UsuarioDAO {
 
     public Usuario autenticar(String email, String senha) {
         String sql = "SELECT * FROM midiasocial.usuarios WHERE LOWER(email) = LOWER(?)";
-        
+        System.out.println("--- TENTATIVA DE LOGIN --- Email: [" + email + "]");
+
         try (Connection conn = DAO.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
@@ -17,14 +20,8 @@ public class UsuarioDAO {
                 if (rs.next()) {
                     String senhaBanco = rs.getString("senha");
                     if (senha.trim().equals(senhaBanco.trim())) {
-                        Usuario u = new Usuario();
-                        u.setId(rs.getInt("id"));
-                        u.setNome(rs.getString("nome"));
-                        u.setEmail(rs.getString("email"));
-                        u.setSenha(senhaBanco);
-                        u.setTipo(rs.getString("tipo"));
-                        u.setAtivo(rs.getBoolean("ativo"));
-                        return u;
+                        System.out.println(">> SENHA OK! <<");
+                        return montarUsuario(rs);
                     }
                 }
             }
@@ -48,5 +45,35 @@ public class UsuarioDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // --- NOVO MÉTODO: Listar todos os usuários ---
+    public List<Usuario> listar() {
+        List<Usuario> lista = new ArrayList<>();
+        String sql = "SELECT * FROM midiasocial.usuarios ORDER BY id";
+        
+        try (Connection conn = DAO.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                lista.add(montarUsuario(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    // Helper para montar objeto
+    private Usuario montarUsuario(ResultSet rs) throws SQLException {
+        Usuario u = new Usuario();
+        u.setId(rs.getInt("id"));
+        u.setNome(rs.getString("nome"));
+        u.setEmail(rs.getString("email"));
+        u.setSenha(rs.getString("senha"));
+        u.setTipo(rs.getString("tipo"));
+        u.setAtivo(rs.getBoolean("ativo"));
+        return u;
     }
 }

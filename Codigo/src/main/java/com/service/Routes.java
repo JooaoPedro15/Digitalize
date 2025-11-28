@@ -2,6 +2,10 @@ package com.service;
 
 import com.dao.*;
 import com.model.*;
+
+import main.java.com.dao.UsuarioDAO;
+import main.java.com.model.Usuario;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import static spark.Spark.*;
@@ -135,9 +139,24 @@ public class Routes {
             }
         });
         
-        // Placeholders
+        // ==================================================================
+        // 6. LISTAGEM DE USUÁRIOS (NOVO)
+        // ==================================================================
+        get("/api/usuarios", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            try {
+                return gson.toJson(new UsuarioDAO().listar());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "[]";
+            }
+        });
+
+        // Placeholders restantes
         get("/api/avaliacoes", (req, res) -> "[]");
         get("/api/produtos", (req, res) -> "[]");
         get("/api/parceiros", (req, res) -> "[]");
+    }
+}
     }
 }
