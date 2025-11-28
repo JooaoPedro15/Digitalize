@@ -2,9 +2,7 @@
 (async function () {
   function getUser() {
     try {
-      const raw =
-        localStorage.getItem("currentUser") ||
-        localStorage.getItem("userInfo");
+      const raw = localStorage.getItem("currentUser");
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
       return null;
@@ -20,35 +18,44 @@
 
   async function findEmpresaByEmail(email) {
     if (!email) return null;
-    // Tenta por responsavelEmail e depois por email
-    const endpoints = [
-      `/api/empresas?responsavelEmail=${encodeURIComponent(email)}&_limit=1`,
-      `/api/empresas?email=${encodeURIComponent(email)}&_limit=1`
-    ];
-    for (const url of endpoints) {
-      try {
-        const r = await fetch(url);
-        if (!r.ok) continue;
+    
+    // --- CORREÇÃO: Usar a rota específica que criamos no Java ---
+    const url = `/api/empresas/usuario/${encodeURIComponent(email)}`;
+    
+    try {
+      const r = await fetch(url);
+      if (r.ok) {
         const arr = await r.json();
-        if (Array.isArray(arr) && arr.length) return arr[0];
-      } catch (e) {}
+        // Se o usuário tiver empresas, pega a primeira
+        if (Array.isArray(arr) && arr.length > 0) {
+          return arr[0];
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao buscar empresa:", e);
     }
     return null;
   }
 
   function renderEmpresa(empresa) {
-    const nome =
-      empresa.nomeFantasia ||
-      empresa.razaoSocial ||
-      empresa.nome ||
-      "Minha Empresa";
+    const nome = empresa.nomeFantasia || empresa.nome_fantasia || "Minha Empresa";
+    const razao = empresa.razaoSocial || empresa.razao_social || "—";
+    const cnpj = empresa.cnpj || "—";
+    const segmento = empresa.segmento || "—";
+    const status = empresa.status || "pendente";
+    
+    // Tratamento de endereço (String ou Objeto)
+    let enderecoStr = "—";
+    if (typeof empresa.endereco === 'string') {
+        enderecoStr = empresa.endereco;
+    } else if (empresa.endereco && typeof empresa.endereco === 'object') {
+        enderecoStr = empresa.endereco.cidade || "—";
+    }
 
     document.getElementById("empresa-nome").textContent = nome;
-    document.getElementById("empresa-sub").textContent = empresa.cnpj
-      ? `CNPJ ${empresa.cnpj}`
-      : empresa.segmento || "—";
+    document.getElementById("empresa-sub").textContent = `CNPJ ${cnpj}`;
 
-    const st = statusBadge(empresa.status);
+    const st = statusBadge(status);
     const badge = document.getElementById("empresa-status");
     badge.className = st.cls;
     badge.textContent = st.text;
@@ -56,13 +63,11 @@
     const info = document.getElementById("empresa-info");
     info.innerHTML = `
       <ul class="list">
-        <li><strong>Razão Social:</strong> ${empresa.razaoSocial || "—"}</li>
-        <li><strong>Nome Fantasia:</strong> ${empresa.nomeFantasia || "—"}</li>
-        <li><strong>Segmento:</strong> ${empresa.segmento || "—"}</li>
-        <li><strong>Responsável:</strong> ${empresa.responsavelNome || "—"}</li>
-        <li><strong>E-mail do Responsável:</strong> ${
-          empresa.responsavelEmail || empresa.email || "—"
-        }</li>
+        <li><strong>Razão Social:</strong> ${razao}</li>
+        <li><strong>Nome Fantasia:</strong> ${nome}</li>
+        <li><strong>Segmento:</strong> ${segmento}</li>
+        <li><strong>Endereço:</strong> ${enderecoStr}</li>
+        <li><strong>Responsável:</strong> ${empresa.responsavelEmail || "—"}</li>
         <li><strong>Status:</strong> ${st.text}</li>
       </ul>
     `;
@@ -70,252 +75,67 @@
     const tools = document.getElementById("tools-buttons");
     tools.innerHTML = "";
     const help = document.getElementById("tools-help");
-    const aprovado = st.text.toLowerCase() === "aprovada";
-
-    if (aprovado) {
-      help.textContent =
-        "Tudo pronto! Importe seu CSV e acompanhe suas métricas.";
+    
+    if (st.text === "Aprovada") {
+      help.textContent = "Tudo pronto! Importe seu CSV e acompanhe suas métricas.";
       const btnImp = document.createElement("a");
-      btnImp.href = "importacao.html";
+      btnImp.href = "importacao.html"; // Ou a página correta de importação
       btnImp.className = "btn btn-primary";
-      btnImp.innerHTML =
-        '<i class="fa fa-file-import" style="margin-right:.5rem"></i> Importar CSV';
+      btnImp.innerHTML = '<i class="fas fa-file-import"></i> Importar CSV';
+      // Adiciona evento para navegar se for SPA
+      btnImp.onclick = (e) => {
+         e.preventDefault();
+         // Tenta usar o roteador global se existir
+         if(window.digitalizeApp) window.digitalizeApp.navigateTo('importacao'); // ajuste conforme sua rota
+         else alert("Funcionalidade de importação aqui");
+      };
       tools.appendChild(btnImp);
     } else {
-      help.textContent =
-        "Sua empresa precisa estar aprovada para liberar as ferramentas.";
+      help.textContent = "Sua empresa precisa estar aprovada para liberar as ferramentas.";
       const btn = document.createElement("button");
       btn.disabled = true;
       btn.className = "btn btn-secondary";
-      btn.textContent = "Importar CSV (aguardando aprovação)";
+      btn.textContent = "Aguardando Aprovação";
       tools.appendChild(btn);
     }
   }
 
-  function loadInsights(email) {
-    try {
-      const raw = localStorage.getItem("insights_" + email);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function renderRecs(ins) {
-    const box = document.getElementById("recs");
-    if (!ins) {
-      box.innerHTML =
-        '<div class="empty">Sem recomendações ainda. Faça a importação do CSV para gerarmos sugestões personalizadas.</div>';
-      return;
-    }
-    // Monta recomendações simples a partir de topHours e topPosts
-    const horas = (ins.topHours || []).map(
-      (h) =>
-        `${String(h.hour).padStart(2, "0")}:00 (média ${Math.round(
-          h.avg
-        )} interações)`
-    );
-    const posts = (ins.topPostsAbs || []).map(
-      (p, idx) =>
-        `${idx + 1}º — ${p.title || "Post #" + (p.i + 1)} (${Math.round(
-          p.interactions
-        )} interações)`
-    );
-    box.innerHTML = `
-      <div class="grid-2">
-        <div>
-          <h3 class="h6">Melhores horários</h3>
-          <ul class="list">${horas.map((h) => `<li>${h}</li>`).join("")}</ul>
-        </div>
-        <div>
-          <h3 class="h6">Top posts</h3>
-          <ul class="list">${posts.map((p) => `<li>${p}</li>`).join("")}</ul>
-        </div>
-      </div>
-      <p class="muted" style="margin-top:12px">Recomendações geradas a partir do último CSV importado nesta conta.</p>
-    `;
-  }
-
-  // Habilita o botao "Minhas dicas" apos o CSV ser importado (ou apos carregar a empresa)
-  function habilitarMinhasDicas(cnpj) {
-    var btn = document.getElementById("btn-minhas-dicas");
-    if (!btn) {
-      return;
-    }
-
-    btn.disabled = false;
-    // guarda o CNPJ no proprio botao
-    btn.dataset.cnpj = cnpj;
-  }
-
-  // Faz GET na rota /empresa/:cnpj/guia-postagem e mostra na tela
-  function buscarGuiaPostagem(cnpj) {
-    var container = document.getElementById("guia-postagem");
-    if (!container) {
-      return;
-    }
-
-    container.innerHTML = "<p>Gerando dicas...</p>";
-
-    fetch("/empresa/" + encodeURIComponent(cnpj) + "/guia-postagem")
-      .then(function (resp) {
-        if (!resp.ok) {
-          return resp.text().then(function (txt) {
-            throw new Error("Erro " + resp.status + ": " + txt);
-          });
-        }
-        return resp.json();
-      })
-      .then(function (guia) {
-        renderizarGuia(guia, container);
-      })
-      .catch(function (erro) {
-        console.error(erro);
-        container.innerHTML =
-          "<p style='color:red;'>Erro ao gerar guia: " +
-          erro.message +
-          "</p>";
-      });
-  }
-
-  // Monta o HTML do guia de postagem
-  function renderizarGuia(guia, container) {
-    var html = "";
-
-    html +=
-      "<div style='border:1px solid #ddd; border-radius:8px; padding:12px; background:#f8fafc; font-size:14px;'>";
-
-    // Resumo
-    html +=
-      "<h3 style='font-weight:bold; margin-bottom:4px;'>Resumo do periodo</h3>";
-    html += "<p>" + (guia.resumo_periodo || "") + "</p>";
-
-    // Top 3 insights
-    html +=
-      "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Top 3 insights</h3>";
-    html += "<ul>";
-    if (guia.top_3_insights) {
-      guia.top_3_insights.forEach(function (t) {
-        html += "<li>" + t + "</li>";
-      });
-    }
-    html += "</ul>";
-
-    // Melhores horarios
-    html +=
-      "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Melhores horarios</h3>";
-    if (guia.melhores_horarios && guia.melhores_horarios.length > 0) {
-      html += "<p>" + guia.melhores_horarios.join(", ") + "</p>";
-    } else {
-      html += "<p>—</p>";
-    }
-
-    // Tom de voz
-    html +=
-      "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Tom de voz recomendado</h3>";
-    html += "<ul>";
-    if (guia.diretrizes_tom_voz) {
-      guia.diretrizes_tom_voz.forEach(function (t) {
-        html += "<li>" + t + "</li>";
-      });
-    }
-    html += "</ul>";
-
-    // O que evitar
-    html +=
-      "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>O que evitar</h3>";
-    html += "<ul>";
-    if (guia.o_que_evitar) {
-      guia.o_que_evitar.forEach(function (t) {
-        html += "<li>" + t + "</li>";
-      });
-    }
-    html += "</ul>";
-
-    // Sugestoes de posts
-    html +=
-      "<h3 style='font-weight:bold; margin-top:12px; margin-bottom:4px;'>Sugestoes de posts</h3>";
-    if (guia.sugestoes_posts) {
-      guia.sugestoes_posts.forEach(function (sug, i) {
-        html +=
-          "<div style='border:1px solid #e2e8f0; border-radius:6px; padding:8px; margin-top:6px; background:white;'>";
-        html +=
-          "<p style='font-weight:bold;'>" +
-          (sug.titulo || "Ideia " + (i + 1)) +
-          "</p>";
-        html +=
-          "<p><strong>Legenda:</strong> " +
-          (sug.descricao_legendada || "") +
-          "</p>";
-        html +=
-          "<p style='font-size:12px;'><strong>Justificativa:</strong> " +
-          (sug.justificativa || "") +
-          "</p>";
-        html += "</div>";
-      });
-    }
-
-    html += "</div>";
-
-    container.innerHTML = html;
-  }
-
-  // Main
+  // --- Main Logic ---
   const user = getUser();
   if (!user) {
-    alert("Você precisa estar logado para acessar esta página.");
+    alert("Você precisa estar logado.");
     window.location.href = "login.html";
     return;
   }
 
-  const email =
-    user.email || user.responsavelEmail || (user.usuario && user.usuario.email);
+  const email = user.email || user.responsavelEmail;
   const empresa = await findEmpresaByEmail(email);
 
   if (!empresa) {
-    document.getElementById("empresa-nome").textContent =
-      "Nenhuma empresa encontrada";
-    document.getElementById("empresa-sub").textContent =
-      "Cadastre sua empresa para liberar esta área.";
-    document.getElementById("empresa-status").className = "badge pendente";
-    document.getElementById("empresa-status").textContent = "—";
-    document.getElementById("empresa-info").innerHTML =
-      '<div class="empty">Sem empresa cadastrada.</div>';
-
-    const tools = document.getElementById("tools-buttons");
-    tools.innerHTML =
-      '<a href="index.html" class="btn btn-secondary">Ir para Cadastrar</a>';
-
-    document.getElementById("recs").innerHTML =
-      '<div class="empty">Cadastre sua empresa e depois importe um CSV para ver recomendações.</div>';
+    // Caso não ache empresa
+    document.getElementById("empresa-nome").textContent = "Nenhuma empresa encontrada";
+    document.getElementById("empresa-sub").textContent = "Cadastre sua empresa para ver os detalhes.";
+    document.getElementById("empresa-info").innerHTML = '<div class="empty">Sem cadastro.</div>';
     return;
   }
 
-  // Render info da empresa
   renderEmpresa(empresa);
-
-  // Configura o botao "Minhas dicas" com o CNPJ REAL da empresa
-  var btnMinhasDicas = document.getElementById("btn-minhas-dicas");
-  if (btnMinhasDicas) {
-    // habilita e guarda o cnpj
-    habilitarMinhasDicas(empresa.cnpj);
-
-    btnMinhasDicas.addEventListener("click", function () {
-      if (btnMinhasDicas.disabled) {
-        return;
-      }
-
-      var cnpj = btnMinhasDicas.dataset.cnpj;
-      if (!cnpj) {
-        alert("CNPJ não definido para gerar o guia.");
-        return;
-      }
-
-      buscarGuiaPostagem(cnpj);
-    });
+  
+  // Carregar Insights (Guia) se houver botão
+  const btnDicas = document.getElementById("btn-minhas-dicas");
+  if(btnDicas) {
+      btnDicas.disabled = false;
+      btnDicas.onclick = () => {
+          // Lógica de chamar o GuiaService
+          const container = document.getElementById("guia-postagem");
+          container.innerHTML = "<p>Gerando dicas com IA...</p>";
+          fetch(`/empresa/${empresa.cnpj}/guia-postagem`)
+            .then(r => r.json())
+            .then(data => {
+                // Renderizar JSON do guia (simplificado)
+                container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            })
+            .catch(e => container.innerHTML = "Erro ao gerar guia.");
+      };
   }
-
-  // Carrega e mostra as recomendações simples (baseadas no CSV salvo em localStorage)
-  const insights = loadInsights(email);
-  renderRecs(insights);
 })();
