@@ -413,7 +413,6 @@ public class Routes
             com.model.Usuario usuario = usuarioDAO.autenticar(email, senha);
 
             if (usuario != null) {
-                // Sucesso! Retorna os dados do usuário (sem a senha)
                 usuario.setSenha(null); 
                 return new com.google.gson.Gson().toJson(usuario);
             } else {
@@ -421,7 +420,7 @@ public class Routes
                 return "{\"error\": \"Email ou senha incorretos\"}";
             }
         });
-        
+
         // ROTA DE LOGIN
         post("/api/login", (req, res) -> {
             res.type("application/json");

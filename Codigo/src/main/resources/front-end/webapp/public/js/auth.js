@@ -1,4 +1,4 @@
-// Sistema de autenticação
+// Sistema de autenticação (Versão Corrigida para o Backend Java)
 class AuthSystem {
     constructor() {
         this.currentUser = null;
@@ -9,17 +9,21 @@ class AuthSystem {
         // Verificar se há usuário logado no localStorage
         const savedUser = localStorage.getItem('currentUser');
         if (savedUser) {
-            this.currentUser = JSON.parse(savedUser);
-            this.updateUI();
+            try {
+                this.currentUser = JSON.parse(savedUser);
+                this.updateUI();
+            } catch (e) {
+                console.error("Erro ao recuperar sessão", e);
+                localStorage.removeItem('currentUser');
+            }
         }
     }
 
     async login(email, senha) {
         try {
-            // Obtém a origem da página (protocolo + domínio + porta) para montar
-            // a base da API. Isso garante que a requisição seja enviada ao mesmo
-            // servidor que está servindo o front‑end, independentemente da porta.
+            // Usa a origem atual (seja localhost ou azurewebsites.net)
             const API_BASE_URL = window.location.origin;
+            
             const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: {
@@ -28,44 +32,30 @@ class AuthSystem {
                 body: JSON.stringify({ email, senha })
             });
 
-            // Decodifica a resposta como JSON. Se não for possível converter, a
-            // exceção será capturada pelo bloco catch abaixo.
+            // Se o login falhar (401), o backend retorna { "error": "..." }
+            // Se der certo (200), retorna o objeto Usuario { "id": 1, ... }
             const data = await response.json();
 
-            if (data.success) {
-                this.currentUser = data.usuario;
+            // VERIFICAÇÃO CORRIGIDA: Se tem ID, o login funcionou
+            if (response.ok && data.id) {
+                this.currentUser = data;
                 localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
                 this.updateUI();
-                return { success: true, message: data.message };
+                return { success: true, message: 'Login realizado com sucesso!' };
             } else {
-                return { success: false, message: data.error };
+                return { success: false, message: data.error || 'Email ou senha incorretos' };
             }
         } catch (error) {
             console.error('Erro no login:', error);
-            return { success: false, message: 'Erro de conexão' };
+            return { success: false, message: 'Erro de conexão com o servidor' };
         }
     }
 
     async register(userData) {
         try {
-            // Usa a mesma origem da página para construir a URL base. Isso mantém
-            // as chamadas de cadastro consistentes com o host e a porta do front‑end.
             const API_BASE_URL = window.location.origin;
 
-            // Primeiro, verificar se o usuário já existe
-            const existingUsersResponse = await fetch(`${API_BASE_URL}/api/usuarios`);
-            const users = await existingUsersResponse.json();
-
-            const userExists = users.find(u => u.email === userData.email);
-            if (userExists) {
-                return { success: false, message: 'Email já cadastrado' };
-            }
-
-            // Criar novo usuário. A lógica de geração de ID e hash da senha deve
-            // permanecer no back‑end para manter a segurança; no entanto, para
-            // compatibilidade com a API atual que armazena a senha em texto puro,
-            // continuamos enviando os dados sem alterações. O Spark irá processar
-            // e salvar a senha de forma segura.
+            // Envia direto para o backend. O banco de dados já vai bloquear duplicados.
             const newUser = {
                 nome: userData.nome,
                 email: userData.email,
@@ -83,13 +73,13 @@ class AuthSystem {
             });
 
             if (response.ok) {
-                return { success: true, message: 'Usuário cadastrado com sucesso' };
+                return { success: true, message: 'Usuário cadastrado com sucesso! Faça login.' };
             } else {
-                // Tenta ler a mensagem de erro retornada pelo backend, caso exista
+                // Tenta ler o erro do Java
                 try {
                     const err = await response.json();
                     return { success: false, message: err.error || 'Erro ao cadastrar usuário' };
-                } catch (err) {
+                } catch (e) {
                     return { success: false, message: 'Erro ao cadastrar usuário' };
                 }
             }
@@ -104,48 +94,47 @@ class AuthSystem {
         localStorage.removeItem('currentUser');
         this.updateUI();
         // Redirecionar para a página inicial
-        window.location.href = '/';
+        window.location.href = 'index.html';
     }
 
     updateUI() {
+        // Atualiza a interface (botões de login/logout/admin)
         const loginLink = document.getElementById('login-link');
         const userMenu = document.getElementById('user-menu');
         const userName = document.getElementById('user-name');
         const adminLink = document.querySelector('[data-page="admin"]');
-        const cadastroLink = document.querySelector('[data-page="cadastro"]');
+        
+        // Tenta achar links de admin no menu
+        const adminHeaderLinks = document.querySelectorAll('a[href="admin.html"]');
 
         if (this.currentUser) {
-            // Usuário logado
+            // LOGADO
             if (loginLink) loginLink.style.display = 'none';
             if (userMenu) {
                 userMenu.classList.remove('hidden');
+                // Alguns templates usam 'd-none' do Bootstrap
+                userMenu.style.display = 'block'; 
                 if (userName) userName.textContent = this.currentUser.nome;
             }
 
-            // Controle de acesso para administradores
-            if (adminLink) {
-                adminLink.style.display = this.currentUser.tipo === 'admin' ? 'inline' : 'none';
-            }
-
-            // Mostrar página Cadastro para qualquer usuário logado
-            if (cadastroLink) {
-                cadastroLink.style.display = 'inline';
-            }
-
-            // Controlar visibilidade do link Admin no cabeçalho
-            const adminHeaderLinks = document.querySelectorAll('a[href="admin.html"]');
+            // Se for admin, mostra botão de admin
+            const ehAdmin = this.currentUser.tipo === 'admin' || this.currentUser.tipo === 'administrador';
+            
+            if (adminLink) adminLink.style.display = ehAdmin ? 'inline' : 'none';
+            
             adminHeaderLinks.forEach(link => {
-                link.style.display = (this.currentUser.tipo === 'admin' || this.currentUser.tipo === 'administrador') ? 'inline' : 'none';
+                link.style.display = ehAdmin ? 'inline' : 'none';
             });
-        } else {
-            // Usuário não logado
-            if (loginLink) loginLink.style.display = 'inline';
-            if (userMenu) userMenu.classList.add('hidden');
-            if (adminLink) adminLink.style.display = 'none';
-            if (cadastroLink) cadastroLink.style.display = 'none';
 
-            // Ocultar link Admin no cabeçalho quando não logado
-            const adminHeaderLinks = document.querySelectorAll('a[href="admin.html"]');
+        } else {
+            // NÃO LOGADO
+            if (loginLink) loginLink.style.display = 'inline';
+            if (userMenu) {
+                userMenu.classList.add('hidden');
+                userMenu.style.display = 'none';
+            }
+            if (adminLink) adminLink.style.display = 'none';
+            
             adminHeaderLinks.forEach(link => {
                 link.style.display = 'none';
             });
@@ -157,7 +146,7 @@ class AuthSystem {
     }
 
     isAdmin() {
-        return this.currentUser && this.currentUser.tipo === 'admin';
+        return this.currentUser && (this.currentUser.tipo === 'admin' || this.currentUser.tipo === 'administrador');
     }
 
     getCurrentUser() {
@@ -165,32 +154,5 @@ class AuthSystem {
     }
 }
 
-// Instanciar o sistema de autenticação
+// Instanciar o sistema
 const authSystem = new AuthSystem();
-
-// Funções globais para compatibilidade com o código existente
-function loginUser(email, senha) {
-    return authSystem.login(email, senha);
-}
-
-function addUser(nome, login, senha, email) {
-    return authSystem.register({ nome, email, senha });
-}
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Logout button
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            authSystem.logout();
-        });
-    }
-
-    // Verificar acesso a páginas restritas
-    const currentPage = window.location.pathname;
-    if (currentPage.includes('admin') && !authSystem.isAdmin()) {
-        alert('Acesso negado. Apenas administradores podem acessar esta página.');
-        window.location.href = '/';
-    }
-});
