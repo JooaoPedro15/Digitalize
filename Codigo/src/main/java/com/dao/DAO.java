@@ -10,7 +10,7 @@ import java.sql.SQLException;
  * Variaveis de ambiente (opcionais):
  *  - DB_URL  (ex.: jdbc:postgresql://localhost:5433/digitalize)
  *  - DB_USER (ex.: postgres)
- *  - DB_PASS (ex.: postgres)
+ *  - DB_PASSWORD (ex.: postgres)
  */
 public class DAO
 {
@@ -22,7 +22,7 @@ public class DAO
     {
         String url  = System.getenv().getOrDefault("DB_URL",  "jdbc:postgresql://localhost:5433/digitalize");
         String user = System.getenv().getOrDefault("DB_USER", "postgres");
-        String pass = System.getenv().getOrDefault("DB_PASS", "postgres");
+        String pass = System.getenv().getOrDefault("DB_PASSWORD", "postgres");
         return DriverManager.getConnection(url, user, pass);
     }
 
