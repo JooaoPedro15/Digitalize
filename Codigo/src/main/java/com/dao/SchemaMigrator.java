@@ -3,6 +3,7 @@ package com.dao;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 public class SchemaMigrator {
     public static void migrate() {
@@ -26,10 +27,19 @@ public class SchemaMigrator {
                     "data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     ");");
 
-                // Admin Padrão
-                st.execute("INSERT INTO usuarios (nome, email, senha, tipo, ativo) " +
-                    "VALUES ('Admin', 'admin@digitalize.com', '123456', 'admin', true) " +
-                    "ON CONFLICT (email) DO NOTHING;");
+                String adminEmail = System.getenv("DIGITALIZE_ADMIN_EMAIL");
+                String adminPassword = System.getenv("DIGITALIZE_ADMIN_PASSWORD");
+                if (adminEmail != null && !adminEmail.isBlank()
+                        && adminPassword != null && !adminPassword.isBlank()) {
+                    try (PreparedStatement ps = c.prepareStatement(
+                            "INSERT INTO usuarios (nome, email, senha, tipo, ativo) " +
+                            "VALUES ('Admin', ?, ?, 'admin', true) " +
+                            "ON CONFLICT (email) DO NOTHING;")) {
+                        ps.setString(1, adminEmail);
+                        ps.setString(2, adminPassword);
+                        ps.executeUpdate();
+                    }
+                }
 
                 // Tabela Empresa
                 st.execute("CREATE TABLE IF NOT EXISTS empresa (" +

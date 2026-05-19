@@ -1,28 +1,65 @@
-
 # Digitalize
 
-O Digitalize é um projeto de desenvolvimento e pesquisa focado em superar a falta de presença online de microempreendedores.
+O Digitalize é um projeto acadêmico de desenvolvimento e pesquisa criado para ajudar microempreendedores a melhorarem sua presença online.
 
-Nosso objetivo principal é criar uma solução digital simples e acessível que ajude esses profissionais a conquistarem uma presença digital robusta e eficaz, sem depender de conhecimentos técnicos avançados.
+A proposta do sistema é oferecer uma solução digital simples e acessível para pequenos negócios que ainda não têm estrutura, tempo ou conhecimento técnico para organizar sua comunicação e suas ações de marketing digital.
 
-💡 Contexto e Objetivo
+O projeto nasceu a partir de entrevistas, análise de mercado e levantamento de dificuldades reais enfrentadas por microempreendedores, como falta de orientação, pouco tempo para gerir redes sociais e ausência de apoio técnico. A partir disso, a equipe desenvolveu um conjunto de ferramentas e diretrizes voltadas para o dia a dia desses profissionais.
 
-A partir de entrevistas detalhadas e análises de mercado, buscamos entender as reais dificuldades enfrentadas pelos microempreendedores (como falta de tempo, apoio e orientação em marketing digital) para, então, desenvolver um kit de ferramentas e diretrizes que realmente faça sentido para o dia a dia deles e os auxilie a crescer no ambiente digital.
+Em essência, o Digitalize busca facilitar o acesso de pequenos empreendedores a práticas de marketing digital e gestão de presença online.
 
-Em essência, o Digitalize visa democratizar o acesso a estratégias de marketing digital para PMEs.
+## Versão de portfólio
+
+Esta versão publicada no meu GitHub pessoal é uma continuação individual do projeto, usada para portfólio, estudos e melhorias técnicas.
+
+O trabalho original foi desenvolvido em grupo no contexto acadêmico da PUC Minas. Esta versão mantém a base do projeto entregue pela equipe, mas também registra as partes em que atuei com mais profundidade e os pontos que pretendo evoluir individualmente.
+
+## Minhas principais contribuições
+
+- Desenvolvimento do backend em Java com Spark;
+- Criação e ajuste de rotas da API REST;
+- Integração com PostgreSQL;
+- Modelagem e ajustes no banco de dados;
+- Integração com Azure OpenAI;
+- Desenvolvimento da lógica do Guia de Postagem;
+- Correções na comunicação entre front-end e backend;
+- Ajustes no fluxo de importação e análise de posts.
 
 ## Alunos integrantes da equipe
 
-* Eduardo Murta de Abreu
-* Jamille Micaele Soares Ferreira
-* João Pedro Costa e Silva
-* Larissa Varella Araújo
+- Eduardo Murta de Abreu
+- Jamille Micaele Soares Ferreira
+- João Pedro Costa e Silva
+- Larissa Varella Araújo
 
 ## Professores responsáveis
 
-* Amália Soares Vieira de Vasconcelos
-* Max do Val Machado
+- Amália Soares Vieira de Vasconcelos
+- Max do Val Machado
 
 ## Instruções de utilização
 
-[Assim que a primeira versão do sistema estiver disponível, deverá complementar com as instruções de utilização. Descreva como instalar eventuais dependências e como executar a aplicação.]
+O projeto contém uma aplicação Java com Spark, integração com PostgreSQL e arquivos de front-end estático.
+
+Para executar a versão backend principal, é necessário ter:
+
+- Java 17;
+- Maven;
+- PostgreSQL configurado;
+- Variáveis de ambiente de banco de dados, quando aplicável.
+
+Por padrão, o backend Java tenta usar as variáveis `DB_URL`, `DB_USER` e `DB_PASS`. Caso elas não estejam configuradas, o projeto usa o banco local `digitalize` em `localhost:5432`.
+
+Para criar um usuário administrador inicial durante a migração do banco, configure também:
+
+- `DIGITALIZE_ADMIN_EMAIL`;
+- `DIGITALIZE_ADMIN_PASSWORD`.
+
+Na pasta `Codigo`, o projeto pode ser compilado e executado com Maven:
+
+```bash
+mvn package
+java -jar target/backend-fixed-0.1.0.jar
+```
+
+O servidor sobe, por padrão, na porta `8080`, ou na porta definida pela variável de ambiente `PORT`.

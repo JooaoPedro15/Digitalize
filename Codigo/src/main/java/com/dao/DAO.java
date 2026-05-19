@@ -12,11 +12,15 @@ public class DAO {
         String user = System.getenv("DB_USER");
         String pass = System.getenv("DB_PASS");
 
-        // Fallback para localhost (caso esteja rodando localmente fora do Azure)
+        // Fallback para execucao local sem expor senha no repositorio.
         if (url == null || url.isEmpty()) {
             url = "jdbc:postgresql://localhost:5432/digitalize";
-            user = "postgres";
-            pass = "admin";
+            if (user == null || user.isEmpty()) {
+                user = "postgres";
+            }
+            if (pass == null) {
+                pass = "";
+            }
         }
 
         return DriverManager.getConnection(url, user, pass);
