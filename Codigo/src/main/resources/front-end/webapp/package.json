@@ -1,12 +1,13 @@
 {
-  "name": "digitalize-unified",
+  "name": "digitalize-legacy-node-prototype",
   "version": "1.0.0",
-  "description": "Sistema unificado Digitalize",
+  "private": true,
+  "description": "Protótipo Node/Express legado. O backend oficial do Digitalize é Java/Spark.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "serve:front": "json-server --watch data/unified_db.json --routes routes.json --static ./public --port 3000 --cors"
+    "legacy:start": "node server.js",
+    "legacy:dev": "node server.js",
+    "legacy:serve:front": "json-server --watch data/unified_db.json --routes routes.json --static ./public --port 3000 --cors"
   },
   "dependencies": {
     "cors": "^2.8.5",

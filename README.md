@@ -41,7 +41,13 @@ O trabalho original foi desenvolvido em grupo no contexto acadêmico da PUC Mina
 
 O projeto contém uma aplicação Java com Spark, integração com PostgreSQL e arquivos de front-end estático.
 
-Para executar a versão backend principal, é necessário ter:
+## Backend oficial
+
+Nesta versão de portfólio, o backend oficial é o Java com Spark, localizado em `Codigo/src/main/java`. O front-end estático fica em `Codigo/src/main/resources/front-end/webapp/public` e é servido pelo próprio backend Spark.
+
+O servidor Node/Express mantido em `Codigo/src/main/resources/front-end/webapp/server.js` é um protótipo legado das primeiras sprints. Ele permanece no repositório apenas como referência histórica do desenvolvimento, mas não deve ser usado como backend principal.
+
+Para executar a versão backend oficial, é necessário ter:
 
 - Java 17;
 - Maven;

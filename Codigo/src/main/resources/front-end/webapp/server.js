@@ -1,3 +1,6 @@
+// Servidor Node/Express legado das primeiras sprints.
+// Na versão de portfólio, o backend oficial é Java/Spark em Codigo/src/main/java.
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
