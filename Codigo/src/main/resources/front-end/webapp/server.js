@@ -127,16 +127,6 @@ function syncStatusFiles() {
   console.log(`Arquivos sincronizados - Aprovadas: ${aprovadas.length}, Rejeitadas: ${rejeitadas.length}, Pendentes: ${pendentes.length}`);
 }
 
-// Middleware de autenticação simples
-function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token de autenticação necessário' });
-  }
-  // Aqui você pode implementar validação de token mais robusta
-  next();
-}
-
 // === ROTAS DA API UNIFICADA ===
 
 // Rota principal
@@ -225,7 +215,6 @@ app.post('/admin/cadastro', (req, res) => {
   // Sincronizar arquivos por status
   syncStatusFiles();
 
-  console.log(" -> Nova empresa cadastrada:", novaEmpresa);
   res.status(200).json({ mensagem: "Cadastro salvo com sucesso!", id: novaEmpresa.id });
 });
 
@@ -374,8 +363,7 @@ app.post('/api/login', (req, res) => {
     res.json({
       success: true,
       message: 'Login realizado com sucesso',
-      usuario: usuarioSeguro,
-      token: 'fake-jwt-token-' + usuario.id
+      usuario: usuarioSeguro
     });
   } else {
     res.status(401).json({
@@ -499,79 +487,6 @@ app.delete('/api/favoritos/:usuarioEmail/:empresaId', (req, res) => {
   }
 });
 
-// Função para escrever empresas no arquivo
-function writeEmpresas(empresas) {
-    fs.writeFileSync(SPRINT02_EMPRESAS_FILE, JSON.stringify(empresas, null, 2));
-}
-
-// Função para ler empresas do arquivo
-function readEmpresas() {
-    if (fs.existsSync(SPRINT02_EMPRESAS_FILE)) {
-        const content = fs.readFileSync(SPRINT02_EMPRESAS_FILE, 'utf8');
-        return JSON.parse(content || '[]');
-    }
-    return [];
-}
-
-// Função para atualizar arquivos de status
-function updateStatusFiles() {
-    try {
-        const empresas = readEmpresas();
-
-        // Separar por status
-        const aprovadas = empresas.filter(e => e.status === 'aprovada' || e.status === 'aprovado');
-        const pendentes = empresas.filter(e => e.status === 'pendente');
-        const rejeitadas = empresas.filter(e => e.status === 'rejeitada' || e.status === 'rejeitado');
-
-        // Atualizar arquivos
-        saveAprovados(aprovadas);
-        savePendentes(pendentes);
-        saveRejeitados(rejeitadas);
-
-        // Atualizar unified_db.json
-        const db = loadUnifiedDB();
-        db.empresas = empresas;
-        saveUnifiedDB(db);
-
-        console.log('Arquivos de status atualizados com sucesso');
-    } catch (error) {
-        console.error('Erro ao atualizar arquivos de status:', error);
-    }
-}
-
-// Endpoint para buscar empresas por email do responsável
-app.get('/api/empresas/usuario/:email', (req, res) => {
-    const { email } = req.params;
-    const db = loadUnifiedDB();
-    const outputEmpresas = loadSprint02Empresas();
-
-    // Criar um mapa para evitar duplicatas por ID
-    const empresasMap = new Map();
-
-    // Buscar nas duas bases
-    const empresasUnificadas = db.empresas.filter(e => 
-      e.responsavel?.email === email || e.responsavelEmail === email
-    );
-  
-    const empresasSprint02Filtradas = outputEmpresas.filter(e => 
-      e.responsavelEmail === email
-    );
-  
-    // Adicionar empresas evitando duplicatas
-    empresasUnificadas.forEach(empresa => {
-      empresasMap.set(empresa.id.toString(), empresa);
-    });
-  
-    empresasSprint02Filtradas.forEach(empresa => {
-      if (!empresasMap.has(empresa.id.toString())) {
-        empresasMap.set(empresa.id.toString(), empresa);
-      }
-    });
-  
-    const todasEmpresas = Array.from(empresasMap.values());
-    res.json(todasEmpresas);
-});
-
 // Endpoint para atualizar empresa
 app.put('/api/empresas/:id', (req, res) => {
     const { id } = req.params;
@@ -658,7 +573,6 @@ app.listen(PORT, () => {
 
   console.log('Base de dados unificada carregada com sucesso!');
   console.log(`Servidor rodando na porta ${PORT}`);
-  console.log('Acesse através do webview do Replit');
   console.log('Dados carregados:');
   console.log(`- Empresas: ${db.empresas.length}`);
   console.log(`- Produtos: ${db.produtos.length}`);

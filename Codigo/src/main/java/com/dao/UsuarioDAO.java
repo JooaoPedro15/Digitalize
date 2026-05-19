@@ -8,8 +8,11 @@ import java.util.List;
 public class UsuarioDAO {
 
     public Usuario autenticar(String email, String senha) {
+        if (email == null || senha == null) {
+            return null;
+        }
+
         String sql = "SELECT * FROM midiasocial.usuarios WHERE LOWER(email) = LOWER(?)";
-        System.out.println("--- TENTATIVA DE LOGIN --- Email: [" + email + "]");
 
         try (Connection conn = DAO.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -20,7 +23,6 @@ public class UsuarioDAO {
                 if (rs.next()) {
                     String senhaBanco = rs.getString("senha");
                     if (senha.trim().equals(senhaBanco.trim())) {
-                        System.out.println(">> SENHA OK! <<");
                         return montarUsuario(rs);
                     }
                 }
@@ -47,7 +49,6 @@ public class UsuarioDAO {
         }
     }
 
-    // --- NOVO MÉTODO: Listar todos os usuários ---
     public List<Usuario> listar() {
         List<Usuario> lista = new ArrayList<>();
         String sql = "SELECT * FROM midiasocial.usuarios ORDER BY id";
@@ -65,7 +66,6 @@ public class UsuarioDAO {
         return lista;
     }
 
-    // Helper para montar objeto
     private Usuario montarUsuario(ResultSet rs) throws SQLException {
         Usuario u = new Usuario();
         u.setId(rs.getInt("id"));

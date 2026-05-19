@@ -117,7 +117,7 @@ public class Routes {
             }
         });
         
-        // Buscar por Usuario
+        // Buscar empresas por e-mail do responsavel
         get("/api/empresas/usuario/:email", (req, res) -> {
             res.type("application/json; charset=utf-8");
             String email = req.params(":email");
@@ -136,29 +136,6 @@ public class Routes {
                 return "[]";
             }
         });
-        // Buscar empresas por email do responsável
-        get("/api/empresas/usuario/:email", (req, res) -> {
-            res.type("application/json; charset=utf-8");
-            String email = req.params(":email");
-            
-            try {
-                EmpresaDAO dao = new EmpresaDAO();
-                java.util.List<Empresa> todas = dao.listar();
-                java.util.List<Empresa> filtradas = new java.util.ArrayList<>();
-                
-                for (Empresa e : todas) {
-                    // Filtra na memória (simples e funciona para apresentação)
-                    if (e.getResponsavel_email() != null && e.getResponsavel_email().equalsIgnoreCase(email)) {
-                        filtradas.add(e);
-                    }
-                }
-                return gson.toJson(filtradas);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return "[]";
-            }
-        });
-
         // 6. Listar Usuários (O que faltava para o Admin)
         get("/api/usuarios", (req, res) -> {
             res.type("application/json; charset=utf-8");

@@ -32,11 +32,13 @@ class AuthSystem {
             // exceção será capturada pelo bloco catch abaixo.
             const data = await response.json();
 
-            if (data.success) {
-                this.currentUser = data.usuario;
+            const usuario = data.usuario || data;
+
+            if (response.ok && usuario && usuario.email) {
+                this.currentUser = usuario;
                 localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
                 this.updateUI();
-                return { success: true, message: data.message };
+                return { success: true, message: data.message || 'Login realizado com sucesso' };
             } else {
                 return { success: false, message: data.error };
             }

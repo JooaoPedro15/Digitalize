@@ -106,7 +106,8 @@
             });
 
             if (res.ok) {
-                const user = await res.json();
+                const payload = await res.json();
+                const user = payload.usuario || payload;
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 
                 alert("Login realizado com sucesso!");

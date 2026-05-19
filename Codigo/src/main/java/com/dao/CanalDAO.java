@@ -242,9 +242,7 @@ public class CanalDAO
                 {
                     if (rs.next())
                     {
-                        long idExistente = rs.getLong("canal_id");
-                        System.out.println("[CanalDAO] Canal generico ja existe. canal_id=" + idExistente);
-                        return idExistente;
+                        return rs.getLong("canal_id");
                     }
                 }
             }
@@ -267,9 +265,7 @@ public class CanalDAO
                 {
                     if (rsIns.next())
                     {
-                        long novoId = rsIns.getLong(1);
-                        System.out.println("[CanalDAO] Canal generico criado. canal_id=" + novoId);
-                        return novoId;
+                        return rsIns.getLong(1);
                     }
                 }
             }
