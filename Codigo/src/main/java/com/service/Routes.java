@@ -19,8 +19,6 @@ import com.google.gson.JsonObject;
 import static spark.Spark.*;
 
 import java.sql.Date;
-import java.util.List;
-import java.util.ArrayList;
 
 public class Routes {
     public static final Gson gson = new Gson();
@@ -122,15 +120,7 @@ public class Routes {
             res.type("application/json; charset=utf-8");
             String email = req.params(":email");
             try {
-                EmpresaDAO dao = new EmpresaDAO();
-                List<Empresa> todas = dao.listar();
-                List<Empresa> filtradas = new ArrayList<>();
-                for (Empresa e : todas) {
-                    if (e.getResponsavel_email() != null && e.getResponsavel_email().equalsIgnoreCase(email)) {
-                        filtradas.add(e);
-                    }
-                }
-                return gson.toJson(filtradas);
+                return gson.toJson(new EmpresaDAO().listarPorResponsavelEmail(email));
             } catch (Exception e) {
                 e.printStackTrace();
                 return "[]";

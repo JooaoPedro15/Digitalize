@@ -151,16 +151,7 @@ public class EmpresaDAO
             {
                 if (rs.next())
                 {
-                    Empresa e = new Empresa();
-                    e.setCnpj(rs.getString("cnpj"));
-                    e.setNome_fantasia(rs.getString("nome_fantasia"));
-                    e.setRazao_social(rs.getString("razao_social"));
-                    e.setSegmento(rs.getString("segmento"));
-                    e.setEndereco(rs.getString("endereco"));
-                    e.setStatus(rs.getString("status"));
-                    e.setResponsavel_email(rs.getString("responsavel_email"));
-                    e.setEmail_contato(rs.getString("email_contato"));
-                    return e;
+                    return montarEmpresa(rs);
                 }
             }
         }
@@ -170,6 +161,56 @@ public class EmpresaDAO
         }
 
         return null;
+    }
+
+    /**
+     * Lista empresas vinculadas ao e-mail do responsavel.
+     *
+     * @param email e-mail do usuario responsavel
+     * @return lista de empresas do responsavel informado
+     */
+    public List<Empresa> listarPorResponsavelEmail(String email)
+    {
+        List<Empresa> out = new ArrayList<>();
+
+        if (email == null || email.isBlank())
+        {
+            return out;
+        }
+
+        String sql = """
+                SELECT cnpj,
+                       nome_fantasia,
+                       razao_social,
+                       segmento,
+                       endereco,
+                       status,
+                       responsavel_email,
+                       email_contato
+                  FROM midiasocial.empresa
+                 WHERE LOWER(responsavel_email) = LOWER(?)
+                 ORDER BY nome_fantasia
+                """;
+
+        try (Connection c = DAO.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql))
+        {
+            ps.setString(1, email.trim());
+
+            try (ResultSet rs = ps.executeQuery())
+            {
+                while (rs.next())
+                {
+                    out.add(montarEmpresa(rs));
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return out;
     }
 
     /**
@@ -200,17 +241,7 @@ public class EmpresaDAO
         {
             while (rs.next())
             {
-                Empresa e = new Empresa();
-                e.setCnpj(rs.getString("cnpj"));
-                e.setNome_fantasia(rs.getString("nome_fantasia"));
-                e.setRazao_social(rs.getString("razao_social"));
-                e.setSegmento(rs.getString("segmento"));
-                e.setEndereco(rs.getString("endereco"));
-                e.setStatus(rs.getString("status"));
-                e.setResponsavel_email(rs.getString("responsavel_email"));
-                e.setEmail_contato(rs.getString("email_contato"));
-
-                out.add(e);
+                out.add(montarEmpresa(rs));
             }
         }
         catch (SQLException e)
@@ -219,5 +250,19 @@ public class EmpresaDAO
         }
 
         return out;
+    }
+
+    private Empresa montarEmpresa(ResultSet rs) throws SQLException
+    {
+        Empresa e = new Empresa();
+        e.setCnpj(rs.getString("cnpj"));
+        e.setNome_fantasia(rs.getString("nome_fantasia"));
+        e.setRazao_social(rs.getString("razao_social"));
+        e.setSegmento(rs.getString("segmento"));
+        e.setEndereco(rs.getString("endereco"));
+        e.setStatus(rs.getString("status"));
+        e.setResponsavel_email(rs.getString("responsavel_email"));
+        e.setEmail_contato(rs.getString("email_contato"));
+        return e;
     }
 }
