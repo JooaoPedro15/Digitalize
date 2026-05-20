@@ -55,10 +55,12 @@ public class UsuarioDAO {
         
         try (Connection conn = DAO.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+            ResultSet rs = ps.executeQuery()) {
             
             while (rs.next()) {
-                lista.add(montarUsuario(rs));
+                Usuario usuario = montarUsuario(rs);
+                usuario.setSenha(null);
+                lista.add(usuario);
             }
         } catch (SQLException e) {
             e.printStackTrace();

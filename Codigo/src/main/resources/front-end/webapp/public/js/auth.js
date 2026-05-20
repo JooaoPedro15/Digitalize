@@ -54,15 +54,6 @@ class AuthSystem {
             // as chamadas de cadastro consistentes com o host e a porta do front‑end.
             const API_BASE_URL = window.location.origin;
 
-            // Primeiro, verificar se o usuário já existe
-            const existingUsersResponse = await fetch(`${API_BASE_URL}/api/usuarios`);
-            const users = await existingUsersResponse.json();
-
-            const userExists = users.find(u => u.email === userData.email);
-            if (userExists) {
-                return { success: false, message: 'Email já cadastrado' };
-            }
-
             // Criar novo usuário. A lógica de geração de ID e hash da senha deve
             // permanecer no back‑end para manter a segurança; no entanto, para
             // compatibilidade com a API atual que armazena a senha em texto puro,
