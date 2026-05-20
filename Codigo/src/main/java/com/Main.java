@@ -1,6 +1,7 @@
 package com;
 
 import static spark.Spark.*;
+import com.config.EnvConfig;
 import com.service.ApiConfig;
 import com.service.Routes;
 
@@ -17,7 +18,7 @@ public class Main {
     }
 
     private static int getPort() {
-        String p = System.getenv("PORT");
+        String p = EnvConfig.get("PORT");
         if (p == null || p.isBlank()) return 8080;
         return Integer.parseInt(p);
     }

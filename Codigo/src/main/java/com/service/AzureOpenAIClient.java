@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
+import com.config.EnvConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -25,7 +26,7 @@ public class AzureOpenAIClient
     // -----------------------------
 
     // Endpoint base do Azure OpenAI (ex: https://digitalize-openai.services.ai.azure.com/)
-    private static final String RAW_ENDPOINT = System.getenv("AZURE_OPENAI_ENDPOINT");
+    private static final String RAW_ENDPOINT = EnvConfig.get("AZURE_OPENAI_ENDPOINT");
 
     // Endpoint tratado para nao terminar com "/"
     private static final String ENDPOINT =
@@ -34,17 +35,17 @@ public class AzureOpenAIClient
             : RAW_ENDPOINT;
 
     // Chave de acesso do recurso Azure OpenAI
-    private static final String API_KEY  = System.getenv("AZURE_OPENAI_API_KEY");
+    private static final String API_KEY  = EnvConfig.get("AZURE_OPENAI_API_KEY");
 
     // Nome do deployment de embeddings (ex: text-embedding-3-small)
-    private static final String EMB_DEP  = System.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT");
+    private static final String EMB_DEP  = EnvConfig.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT");
 
     // Nome do deployment de chat (ex: gpt-5.1-chat)
-    private static final String CHAT_DEP = System.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT");
+    private static final String CHAT_DEP = EnvConfig.get("AZURE_OPENAI_CHAT_DEPLOYMENT");
 
     // Versao da API; se nao for definida, usa 2024-10-21 como padrao
     private static final String API_VER  =
-        System.getenv().getOrDefault("AZURE_OPENAI_API_VERSION", "2024-10-21");
+        EnvConfig.getOrDefault("AZURE_OPENAI_API_VERSION", "2024-10-21");
 
     // Cliente HTTP reutilizado pelas chamadas
     private static final HttpClient http = HttpClient.newHttpClient();

@@ -1,5 +1,7 @@
 package com.dao;
 
+import com.config.EnvConfig;
+
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.SQLException;
@@ -27,8 +29,8 @@ public class SchemaMigrator {
                     "data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     ");");
 
-                String adminEmail = System.getenv("DIGITALIZE_ADMIN_EMAIL");
-                String adminPassword = System.getenv("DIGITALIZE_ADMIN_PASSWORD");
+                String adminEmail = EnvConfig.get("DIGITALIZE_ADMIN_EMAIL");
+                String adminPassword = EnvConfig.get("DIGITALIZE_ADMIN_PASSWORD");
                 if (adminEmail != null && !adminEmail.isBlank()
                         && adminPassword != null && !adminPassword.isBlank()) {
                     try (PreparedStatement ps = c.prepareStatement(

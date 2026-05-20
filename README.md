@@ -54,7 +54,7 @@ Para executar a versão backend oficial, é necessário ter:
 - PostgreSQL configurado;
 - Variáveis de ambiente de banco de dados, quando aplicável.
 
-Use o arquivo `.env.example` como referência para configurar o ambiente local. Ele lista as variáveis esperadas sem expor credenciais reais.
+Use o arquivo `.env.example` como referência para configurar o ambiente local. Ele lista as variáveis esperadas sem expor credenciais reais. Para usar localmente, copie para `.env` e preencha os valores necessários; o backend Java carrega esse arquivo automaticamente quando ele existir na raiz do projeto ou na pasta pai de execução.
 
 Por padrão, o backend Java tenta usar as variáveis `DB_URL`, `DB_USER` e `DB_PASS`. Caso elas não estejam configuradas, o projeto usa o banco local `digitalize` em `localhost:5432`.
 
