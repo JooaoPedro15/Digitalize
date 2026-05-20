@@ -20,3 +20,13 @@ O front-end estático usado pelo Spark fica em:
 A pasta `src/main/resources/front-end/webapp` também contém um servidor Node/Express (`server.js`) usado como protótipo em fases anteriores do projeto acadêmico. Ele foi mantido como referência histórica, mas não é o backend principal desta versão.
 
 Para rodar o projeto de portfólio, use o fluxo Java/Maven descrito no README da raiz.
+
+Rotas principais do backend Java:
+
+- `GET /health`: verifica se a API está online;
+- `POST /api/usuarios`: cria usuário comum com senha armazenada em hash;
+- `POST /api/login`: autentica usuário;
+- `POST /api/empresas`: cadastra empresa como pendente;
+- `PUT /api/empresas/:cnpj/status`: aprova ou rejeita empresa;
+- `POST /importacoes` e `POST /posts`: salvam dados importados do CSV;
+- `GET /empresa/:cnpj/guia-postagem`: gera o Guia de Postagem com Azure OpenAI ou fallback local.

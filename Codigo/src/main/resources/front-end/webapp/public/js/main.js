@@ -149,9 +149,9 @@ class DigitalizeApp {
 
     async verificarEmpresaParaNavegacao(user, cadastroLinks, minhaEmpresaLinks) {
         try {
-            let temEmpresa = this.data.empresas.some(e => e.responsavelEmail === user.email);
+            let temEmpresa = this.data.empresas.some(e => (e.responsavelEmail || e.responsavel_email) === user.email);
             if (!temEmpresa) {
-                const response = await fetch(`/api/empresas/usuario/${user.email}`);
+                const response = await fetch(`/api/empresas/usuario/${encodeURIComponent(user.email)}`);
                 if (response.ok) {
                     const empresas = await response.json();
                     temEmpresa = empresas.length > 0;
@@ -358,7 +358,7 @@ class DigitalizeApp {
             for (const empresa of empresasAprovadas) {
                 const coords = await this.obterCoordenadas(empresa);
                 if (coords) {
-                    const nome = empresa.nomeFantasia || empresa.nome || 'Empresa';
+                    const nome = empresa.nomeFantasia || empresa.nome_fantasia || empresa.nome || 'Empresa';
                     const segmento = empresa.segmento || '';
                     
                     L.marker([coords.lat, coords.lng])
@@ -495,17 +495,17 @@ class DigitalizeApp {
             btn.innerText = "Enviando...";
             btn.disabled = true;
 
-            const response = await fetch('/admin/cadastro', {
+            const response = await fetch('/api/empresas', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(empresaParaEnviar)
             });
 
             if (response.ok) {
-                alert('Empresa cadastrada e aprovada com sucesso!');
+                alert('Empresa cadastrada com sucesso! Ela ficara pendente ate a aprovacao no painel administrativo.');
                 form.reset();
                 await this.loadData();
-                this.navigateTo('empresas');
+                window.location.href = 'minha-empresa.html';
             } else {
                 const err = await response.json();
                 alert('Erro: ' + (err.mensagem || 'Falha ao salvar'));
@@ -523,7 +523,7 @@ class DigitalizeApp {
     handleSearch(query) {
         const termo = query.toLowerCase();
         const filtradas = this.data.empresas.filter(e => 
-            (e.nomeFantasia || '').toLowerCase().includes(termo) ||
+            (e.nomeFantasia || e.nome_fantasia || '').toLowerCase().includes(termo) ||
             (e.segmento || '').toLowerCase().includes(termo)
         );
         const grid = document.getElementById('empresas-grid');

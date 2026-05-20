@@ -19,7 +19,14 @@ public class Main {
 
     private static int getPort() {
         String p = EnvConfig.get("PORT");
-        if (p == null || p.isBlank()) return 8080;
-        return Integer.parseInt(p);
+        if (p == null || p.isBlank()) {
+            return 8080;
+        }
+        try {
+            return Integer.parseInt(p);
+        } catch (NumberFormatException e) {
+            System.err.println("PORT invalida (" + p + "). Usando 8080.");
+            return 8080;
+        }
     }
 }

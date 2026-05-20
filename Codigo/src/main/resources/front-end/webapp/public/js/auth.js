@@ -1,4 +1,3 @@
-// Sistema de autenticação
 class AuthSystem {
     constructor() {
         this.currentUser = null;
@@ -6,89 +5,71 @@ class AuthSystem {
     }
 
     init() {
-        // Verificar se há usuário logado no localStorage
-        const savedUser = localStorage.getItem('currentUser');
-        if (savedUser) {
-            this.currentUser = JSON.parse(savedUser);
-            this.updateUI();
+        try {
+            const savedUser = localStorage.getItem('currentUser');
+            this.currentUser = savedUser ? JSON.parse(savedUser) : null;
+        } catch (error) {
+            localStorage.removeItem('currentUser');
+            this.currentUser = null;
         }
+
+        this.updateUI();
     }
 
     async login(email, senha) {
         try {
-            // Obtém a origem da página (protocolo + domínio + porta) para montar
-            // a base da API. Isso garante que a requisição seja enviada ao mesmo
-            // servidor que está servindo o front‑end, independentemente da porta.
-            const API_BASE_URL = window.location.origin;
-            const response = await fetch(`${API_BASE_URL}/api/login`, {
+            const response = await fetch(`${window.location.origin}/api/login`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, senha })
             });
 
-            // Decodifica a resposta como JSON. Se não for possível converter, a
-            // exceção será capturada pelo bloco catch abaixo.
-            const data = await response.json();
-
+            const data = await this.readJson(response);
             const usuario = data.usuario || data;
 
             if (response.ok && usuario && usuario.email) {
                 this.currentUser = usuario;
-                localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                localStorage.setItem('currentUser', JSON.stringify(usuario));
                 this.updateUI();
                 return { success: true, message: data.message || 'Login realizado com sucesso' };
-            } else {
-                return { success: false, message: data.error };
             }
+
+            return { success: false, message: data.error || 'Email ou senha incorretos' };
         } catch (error) {
             console.error('Erro no login:', error);
-            return { success: false, message: 'Erro de conexão' };
+            return { success: false, message: 'Erro de conexao com o servidor' };
         }
     }
 
     async register(userData) {
         try {
-            // Usa a mesma origem da página para construir a URL base. Isso mantém
-            // as chamadas de cadastro consistentes com o host e a porta do front‑end.
-            const API_BASE_URL = window.location.origin;
-
-            // Criar novo usuário. A lógica de geração de ID e hash da senha deve
-            // permanecer no back‑end para manter a segurança; no entanto, para
-            // compatibilidade com a API atual que armazena a senha em texto puro,
-            // continuamos enviando os dados sem alterações. O Spark irá processar
-            // e salvar a senha de forma segura.
-            const newUser = {
-                nome: userData.nome,
-                email: userData.email,
-                senha: userData.senha,
-                tipo: 'usuario',
-                ativo: true
-            };
-
-            const response = await fetch(`${API_BASE_URL}/api/usuarios`, {
+            const response = await fetch(`${window.location.origin}/api/usuarios`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newUser)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome: userData.nome,
+                    email: userData.email,
+                    senha: userData.senha
+                })
             });
 
+            const data = await this.readJson(response);
             if (response.ok) {
-                return { success: true, message: 'Usuário cadastrado com sucesso' };
-            } else {
-                // Tenta ler a mensagem de erro retornada pelo backend, caso exista
-                try {
-                    const err = await response.json();
-                    return { success: false, message: err.error || 'Erro ao cadastrar usuário' };
-                } catch (err) {
-                    return { success: false, message: 'Erro ao cadastrar usuário' };
-                }
+                return { success: true, message: data.message || 'Usuario cadastrado com sucesso' };
             }
+
+            return { success: false, message: data.error || 'Erro ao cadastrar usuario' };
         } catch (error) {
             console.error('Erro no registro:', error);
-            return { success: false, message: 'Erro de conexão' };
+            return { success: false, message: 'Erro de conexao com o servidor' };
+        }
+    }
+
+    async readJson(response) {
+        try {
+            return await response.json();
+        } catch (error) {
+            return {};
         }
     }
 
@@ -96,7 +77,6 @@ class AuthSystem {
         this.currentUser = null;
         localStorage.removeItem('currentUser');
         this.updateUI();
-        // Redirecionar para a página inicial
         window.location.href = '/';
     }
 
@@ -106,43 +86,27 @@ class AuthSystem {
         const userName = document.getElementById('user-name');
         const adminLink = document.querySelector('[data-page="admin"]');
         const cadastroLink = document.querySelector('[data-page="cadastro"]');
+        const adminHeaderLinks = document.querySelectorAll('a[href="admin.html"]');
 
         if (this.currentUser) {
-            // Usuário logado
             if (loginLink) loginLink.style.display = 'none';
-            if (userMenu) {
-                userMenu.classList.remove('hidden');
-                if (userName) userName.textContent = this.currentUser.nome;
-            }
-
-            // Controle de acesso para administradores
-            if (adminLink) {
-                adminLink.style.display = this.currentUser.tipo === 'admin' ? 'inline' : 'none';
-            }
-
-            // Mostrar página Cadastro para qualquer usuário logado
-            if (cadastroLink) {
-                cadastroLink.style.display = 'inline';
-            }
-
-            // Controlar visibilidade do link Admin no cabeçalho
-            const adminHeaderLinks = document.querySelectorAll('a[href="admin.html"]');
+            if (userMenu) userMenu.classList.remove('hidden');
+            if (userName) userName.textContent = this.currentUser.nome || this.currentUser.email;
+            if (adminLink) adminLink.style.display = this.isAdmin() ? 'inline' : 'none';
+            if (cadastroLink) cadastroLink.style.display = 'inline';
             adminHeaderLinks.forEach(link => {
-                link.style.display = (this.currentUser.tipo === 'admin' || this.currentUser.tipo === 'administrador') ? 'inline' : 'none';
+                link.style.display = this.isAdmin() ? 'inline' : 'none';
             });
-        } else {
-            // Usuário não logado
-            if (loginLink) loginLink.style.display = 'inline';
-            if (userMenu) userMenu.classList.add('hidden');
-            if (adminLink) adminLink.style.display = 'none';
-            if (cadastroLink) cadastroLink.style.display = 'none';
-
-            // Ocultar link Admin no cabeçalho quando não logado
-            const adminHeaderLinks = document.querySelectorAll('a[href="admin.html"]');
-            adminHeaderLinks.forEach(link => {
-                link.style.display = 'none';
-            });
+            return;
         }
+
+        if (loginLink) loginLink.style.display = 'inline';
+        if (userMenu) userMenu.classList.add('hidden');
+        if (adminLink) adminLink.style.display = 'none';
+        if (cadastroLink) cadastroLink.style.display = 'none';
+        adminHeaderLinks.forEach(link => {
+            link.style.display = 'none';
+        });
     }
 
     isLoggedIn() {
@@ -150,7 +114,10 @@ class AuthSystem {
     }
 
     isAdmin() {
-        return this.currentUser && this.currentUser.tipo === 'admin';
+        return this.currentUser && (
+            this.currentUser.tipo === 'admin' ||
+            this.currentUser.tipo === 'administrador'
+        );
     }
 
     getCurrentUser() {
@@ -158,10 +125,8 @@ class AuthSystem {
     }
 }
 
-// Instanciar o sistema de autenticação
 const authSystem = new AuthSystem();
 
-// Funções globais para compatibilidade com o código existente
 function loginUser(email, senha) {
     return authSystem.login(email, senha);
 }
@@ -170,9 +135,7 @@ function addUser(nome, login, senha, email) {
     return authSystem.register({ nome, email, senha });
 }
 
-// Event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    // Logout button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
@@ -180,10 +143,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Verificar acesso a páginas restritas
-    const currentPage = window.location.pathname;
-    if (currentPage.includes('admin') && !authSystem.isAdmin()) {
-        alert('Acesso negado. Apenas administradores podem acessar esta página.');
+    if (window.location.pathname.includes('admin') && !authSystem.isAdmin()) {
+        alert('Acesso negado. Apenas administradores podem acessar esta pagina.');
         window.location.href = '/';
     }
 });

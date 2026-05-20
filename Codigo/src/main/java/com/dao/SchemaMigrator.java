@@ -1,6 +1,7 @@
 package com.dao;
 
 import com.config.EnvConfig;
+import com.service.PasswordHasher;
 
 import java.sql.Connection;
 import java.sql.Statement;
@@ -38,7 +39,7 @@ public class SchemaMigrator {
                             "VALUES ('Admin', ?, ?, 'admin', true) " +
                             "ON CONFLICT (email) DO NOTHING;")) {
                         ps.setString(1, adminEmail);
-                        ps.setString(2, adminPassword);
+                        ps.setString(2, PasswordHasher.hash(adminPassword));
                         ps.executeUpdate();
                     }
                 }
@@ -66,13 +67,61 @@ public class SchemaMigrator {
                 // Outras tabelas
                 st.execute("CREATE TABLE IF NOT EXISTS canal (canal_id BIGSERIAL PRIMARY KEY, empresa_cnpj CHAR(14) NOT NULL REFERENCES empresa(cnpj) ON DELETE CASCADE, plataforma VARCHAR(20) NOT NULL, canal_identificador VARCHAR(80) NOT NULL, CONSTRAINT canal_ak UNIQUE (empresa_cnpj, plataforma, canal_identificador));");
                 st.execute("CREATE TABLE IF NOT EXISTS importacao (canal_id BIGINT NOT NULL REFERENCES canal(canal_id) ON DELETE CASCADE, importacao_arquivo_original VARCHAR(255) NOT NULL, importacao_periodo_inicio DATE NOT NULL, importacao_periodo_fim DATE NOT NULL, importacao_status VARCHAR(12) NOT NULL DEFAULT 'PENDENTE', CONSTRAINT importacao_pk PRIMARY KEY (canal_id, importacao_arquivo_original, importacao_periodo_inicio));");
-                st.execute("CREATE TABLE IF NOT EXISTS post (canal_id BIGINT NOT NULL REFERENCES canal(canal_id) ON DELETE CASCADE, data_hora TIMESTAMP NOT NULL, legenda VARCHAR(300) NOT NULL, duracao INTEGER DEFAULT 0, alcance INTEGER DEFAULT 0, views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, shares INTEGER DEFAULT 0, comentarios INTEGER DEFAULT 0, saves INTEGER DEFAULT 0, imp_arquivo_original VARCHAR(255), imp_periodo_inicio DATE, CONSTRAINT post_pk PRIMARY KEY (canal_id, data_hora, legenda));");
+                st.execute("CREATE TABLE IF NOT EXISTS post (canal_id BIGINT NOT NULL REFERENCES canal(canal_id) ON DELETE CASCADE, data_hora TIMESTAMP NOT NULL, legenda VARCHAR(300) NOT NULL, duracao INTEGER DEFAULT 0, alcance INTEGER DEFAULT 0, views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, shares INTEGER DEFAULT 0, comentarios INTEGER DEFAULT 0, saves INTEGER DEFAULT 0, importacao_arquivo_original VARCHAR(255), importacao_periodo_inicio DATE, CONSTRAINT post_pk PRIMARY KEY (canal_id, data_hora, legenda));");
+
+                st.execute("ALTER TABLE post ADD COLUMN IF NOT EXISTS importacao_arquivo_original VARCHAR(255);");
+                st.execute("ALTER TABLE post ADD COLUMN IF NOT EXISTS importacao_periodo_inicio DATE;");
+                st.execute("""
+                    DO $$
+                    BEGIN
+                        IF EXISTS (
+                            SELECT 1 FROM information_schema.columns
+                            WHERE table_schema = 'midiasocial'
+                              AND table_name = 'post'
+                              AND column_name = 'imp_arquivo_original'
+                        ) THEN
+                            UPDATE midiasocial.post
+                               SET importacao_arquivo_original = COALESCE(importacao_arquivo_original, imp_arquivo_original);
+                        END IF;
+
+                        IF EXISTS (
+                            SELECT 1 FROM information_schema.columns
+                            WHERE table_schema = 'midiasocial'
+                              AND table_name = 'post'
+                              AND column_name = 'imp_periodo_inicio'
+                        ) THEN
+                            UPDATE midiasocial.post
+                               SET importacao_periodo_inicio = COALESCE(importacao_periodo_inicio, imp_periodo_inicio);
+                        END IF;
+                    END $$;
+                    """);
+                st.execute("""
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (
+                            SELECT 1 FROM information_schema.table_constraints
+                            WHERE table_schema = 'midiasocial'
+                              AND table_name = 'post'
+                              AND constraint_name = 'fk_post_importacao'
+                        ) THEN
+                            BEGIN
+                                ALTER TABLE midiasocial.post
+                                ADD CONSTRAINT fk_post_importacao
+                                FOREIGN KEY (canal_id, importacao_arquivo_original, importacao_periodo_inicio)
+                                REFERENCES midiasocial.importacao (canal_id, importacao_arquivo_original, importacao_periodo_inicio)
+                                DEFERRABLE INITIALLY DEFERRED;
+                            EXCEPTION WHEN others THEN
+                                RAISE NOTICE 'Nao foi possivel criar fk_post_importacao: %', SQLERRM;
+                            END;
+                        END IF;
+                    END $$;
+                    """);
 
                 c.commit();
             }
         } catch (Exception e) {
-            e.printStackTrace();
             try { if (c != null) c.rollback(); } catch (SQLException ex) { }
+            throw new IllegalStateException("Nao foi possivel preparar o banco de dados.", e);
         } finally {
             DAO.close(c);
         }

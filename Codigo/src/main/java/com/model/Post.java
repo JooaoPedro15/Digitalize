@@ -1,5 +1,7 @@
 package com.model;
 
+import com.google.gson.annotations.SerializedName;
+
 // Datas convertidas para java.sql.*,
 // pois o DAO usa Timestamp e Date diretamente nas operações JDBC.
 import java.sql.Timestamp;
@@ -50,12 +52,14 @@ public class Post {
     private Integer saves;
 
     /** Caminho ou referência ao arquivo original importado. */
+    @SerializedName(value="imp_arquivo_original", alternate={"importacao_arquivo_original"})
     private String imp_arquivo_original;
 
     /**
      * Data de início do período referente ao arquivo de importação.
      * Uso de java.sql.Date para corresponder ao tipo DATE do banco.
      */
+    @SerializedName(value="imp_periodo_inicio", alternate={"importacao_periodo_inicio"})
     private Date imp_periodo_inicio;
 
     /** Construtor padrão (necessário para JSON, frameworks e JDBC). */

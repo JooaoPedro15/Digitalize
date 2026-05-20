@@ -49,7 +49,7 @@ O servidor Node/Express mantido em `Codigo/src/main/resources/front-end/webapp/s
 
 Para executar a versão backend oficial, é necessário ter:
 
-- Java 17;
+- Java 17, conforme indicado em `.java-version`;
 - Maven;
 - PostgreSQL configurado;
 - Variáveis de ambiente de banco de dados, quando aplicável.
@@ -71,3 +71,24 @@ java -jar target/backend-fixed-0.1.0.jar
 ```
 
 O servidor sobe, por padrão, na porta `8080`, ou na porta definida pela variável de ambiente `PORT`.
+
+Depois que o servidor iniciar, acesse:
+
+- Aplicação web: `http://localhost:8080`;
+- Health check da API: `http://localhost:8080/health`;
+- Painel administrativo: `http://localhost:8080/admin.html`.
+
+Fluxo principal para testar a versão de portfólio:
+
+1. Criar um usuário comum pela tela de login;
+2. Cadastrar uma empresa pelo site;
+3. Aprovar a empresa no painel administrativo;
+4. Entrar em "Minha Empresa";
+5. Importar um CSV em `importacao.html`;
+6. Gerar o Guia de Postagem.
+
+Observações técnicas desta versão:
+
+- As senhas de novos usuários são armazenadas com hash PBKDF2 no backend Java;
+- O Guia de Postagem funciona com Azure OpenAI quando as variáveis forem configuradas, mas possui fallback local para manter a aplicação utilizável em ambiente de portfólio;
+- O arquivo `.env` real não deve ser versionado. Use apenas `.env.example` como referência pública.

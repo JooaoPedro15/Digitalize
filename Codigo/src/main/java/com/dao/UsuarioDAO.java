@@ -1,6 +1,7 @@
 package com.dao;
 
 import com.model.Usuario;
+import com.service.PasswordHasher;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class UsuarioDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String senhaBanco = rs.getString("senha");
-                    if (senha.trim().equals(senhaBanco.trim())) {
+                    if (PasswordHasher.verify(senha, senhaBanco)) {
                         return montarUsuario(rs);
                     }
                 }
@@ -39,7 +40,7 @@ public class UsuarioDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, u.getNome());
             ps.setString(2, u.getEmail().trim().toLowerCase());
-            ps.setString(3, u.getSenha().trim());
+            ps.setString(3, PasswordHasher.hash(u.getSenha()));
             ps.setString(4, u.getTipo());
             ps.setBoolean(5, true);
             return ps.executeUpdate() > 0;
