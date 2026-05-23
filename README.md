@@ -14,6 +14,14 @@ Esta versão publicada no meu GitHub pessoal é uma continuação individual do 
 
 O trabalho original foi desenvolvido em grupo no contexto acadêmico da PUC Minas. Esta versão mantém a base do projeto entregue pela equipe, mas também registra as partes em que atuei com mais profundidade e os pontos que pretendo evoluir individualmente.
 
+## Status da versão de portfólio
+
+- A aplicação principal desta versão roda pelo backend Java/Spark em `Codigo/src/main/java`;
+- O front-end estático é servido pelo próprio backend e fica em `Codigo/src/main/resources/front-end/webapp/public`;
+- O PostgreSQL é necessário para testar o fluxo completo de usuários, empresas, importações e posts;
+- A integração com Azure OpenAI é opcional. Quando as variáveis não estão configuradas, o Guia de Postagem usa fallback local para manter a demonstração funcional;
+- Arquivos de build, IDE, dados locais, conflitos de merge e credenciais reais não fazem parte da versão pública do portfólio.
+
 ## Minhas principais contribuições
 
 - Desenvolvimento do backend em Java com Spark;

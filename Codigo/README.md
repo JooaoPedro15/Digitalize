@@ -21,6 +21,12 @@ A pasta `src/main/resources/front-end/webapp` também contém um servidor Node/E
 
 Para rodar o projeto de portfólio, use o fluxo Java/Maven descrito no README da raiz.
 
+## Notas para a versão pública
+
+- Use o backend Java/Spark como referência principal em demonstrações e revisões de código;
+- Configure `.env` localmente a partir de `.env.example`, sem versionar credenciais reais;
+- A pasta `public/conflicts`, arquivos de IDE, builds e backups são materiais locais e não devem entrar nos commits públicos.
+
 Rotas principais do backend Java:
 
 - `GET /health`: verifica se a API está online;

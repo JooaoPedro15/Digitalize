@@ -127,6 +127,10 @@ class AuthSystem {
 
 const authSystem = new AuthSystem();
 
+if (typeof window !== 'undefined') {
+    window.authSystem = authSystem;
+}
+
 function loginUser(email, senha) {
     return authSystem.login(email, senha);
 }

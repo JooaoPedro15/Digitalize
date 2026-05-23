@@ -27,7 +27,7 @@
       <version>42.7.4</version>
     </dependency>
 
-    <!-- Gson ( -->
+    <!-- Gson para serializar JSON -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -41,7 +41,7 @@
       <version>1.7.36</version>
     </dependency>
 
-    <!-- Jackson (necessário para AzureOpenAIClient) -->
+    <!-- Jackson para o AzureOpenAIClient -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>

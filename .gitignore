@@ -49,6 +49,7 @@ pnpm-debug.log*
 Codigo/src/main/resources/front-end/webapp/data/*.json
 Codigo/src/main/resources/front-end/webapp/output/*.json
 Codigo/src/main/resources/front-end/webapp/attached_assets/
+Codigo/src/main/resources/front-end/webapp/public/conflicts/
 Codigo/src/main/resources/front-end/webapp/public/js/*.bak
 
 # Logs and temporary files
