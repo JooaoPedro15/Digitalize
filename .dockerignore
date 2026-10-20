@@ -1,0 +1,8 @@
+.git
+.github
+.env
+Artefatos
+Divulgacao
+Documentacao
+Codigo/target
+**/node_modules

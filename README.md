@@ -64,7 +64,7 @@ Para executar a versão backend oficial, é necessário ter:
 
 Use o arquivo `.env.example` como referência para configurar o ambiente local. Ele lista as variáveis esperadas sem expor credenciais reais. Para usar localmente, copie para `.env` e preencha os valores necessários; o backend Java carrega esse arquivo automaticamente quando ele existir na raiz do projeto ou na pasta pai de execução.
 
-Por padrão, o backend Java tenta usar as variáveis `DB_URL`, `DB_USER` e `DB_PASS`. Caso elas não estejam configuradas, o projeto usa o banco local `digitalize` em `localhost:5432`.
+Se a variável `DATABASE_URL` estiver definida (formato `postgresql://usuario:senha@host/banco`, usado por provedores como Neon e Render), ela tem prioridade. Caso contrário, o backend Java tenta usar as variáveis `DB_URL`, `DB_USER` e `DB_PASS`. Caso elas não estejam configuradas, o projeto usa o banco local `digitalize` em `localhost:5432`.
 
 Para criar um usuário administrador inicial durante a migração do banco, configure também:
 
@@ -100,3 +100,18 @@ Observações técnicas desta versão:
 - As senhas de novos usuários são armazenadas com hash PBKDF2 no backend Java;
 - O Guia de Postagem funciona com Azure OpenAI quando as variáveis forem configuradas, mas possui fallback local para manter a aplicação utilizável em ambiente de portfólio;
 - O arquivo `.env` real não deve ser versionado. Use apenas `.env.example` como referência pública.
+
+## Modo demonstração
+
+Com `DIGITALIZE_DEMO=true`, o backend cria na inicialização uma conta de demonstração com a empresa fictícia "Doce Lar Confeitaria", um canal e posts de exemplo dos últimos 28 dias. A tela de login passa a exibir o botão "Entrar como demonstração", que leva direto para "Minha Empresa" com o Guia de Postagem já disponível.
+
+Os posts de exemplo são recriados a cada reinicialização, com datas relativas ao dia atual.
+
+## Deploy
+
+O repositório inclui um `Dockerfile` (build com Maven e execução com Java 17) e um `render.yaml` para publicação no [Render](https://render.com) com banco PostgreSQL externo (por exemplo, [Neon](https://neon.tech)).
+
+1. Criar um banco PostgreSQL no Neon e copiar a connection string;
+2. No Render, criar um novo Blueprint apontando para este repositório;
+3. Preencher a variável `DATABASE_URL` com a connection string do Neon;
+4. Aguardar o build. A aplicação fica disponível no endereço gerado pelo Render.
