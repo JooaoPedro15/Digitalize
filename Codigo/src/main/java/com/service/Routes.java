@@ -1,6 +1,7 @@
 package com.service;
 
 import com.dao.CanalDAO;
+import com.dao.DemoSeeder;
 import com.dao.EmpresaDAO;
 import com.dao.ImportacaoDAO;
 import com.dao.PostDAO;
@@ -31,6 +32,7 @@ public class Routes {
         } catch (Exception e) {
             System.err.println("Aviso: erro na migracao. O sistema continuara rodando: " + e.getMessage());
         }
+        DemoSeeder.seed();
 
         GuiaService guiaService = new GuiaService();
 
@@ -63,6 +65,28 @@ public class Routes {
                 res.status(500);
                 return error("Erro interno no servidor.");
             }
+        });
+
+        get("/api/demo", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            return "{\"ativo\":" + DemoSeeder.ativo() + "}";
+        });
+
+        post("/api/login/demo", (req, res) -> {
+            res.type("application/json; charset=utf-8");
+            if (!DemoSeeder.ativo()) {
+                res.status(404);
+                return error("Modo demonstracao desativado.");
+            }
+
+            Usuario usuario = new UsuarioDAO().autenticar(DemoSeeder.DEMO_EMAIL, DemoSeeder.senha());
+            if (usuario == null) {
+                res.status(503);
+                return error("Conta demo indisponivel no momento.");
+            }
+
+            usuario.setSenha(null);
+            return gson.toJson(usuario);
         });
 
         post("/api/usuarios", (req, res) -> {

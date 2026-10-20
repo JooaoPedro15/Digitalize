@@ -20,7 +20,12 @@
               <h3 class="text-dark">Bem-vindo de volta!</h3>
               <p class="text-muted">Faça login para acessar sua conta</p>
             </div>
-            
+
+            <div id="demo-box" class="alert alert-info text-center d-none">
+              <p class="mb-2">Quer só conhecer o sistema? Entre com uma conta de demonstração, já com empresa e posts de exemplo.</p>
+              <button type="button" id="btn-demo" class="btn btn-success w-100">Entrar como demonstração</button>
+            </div>
+
             <form id="login-form">
               <div class="form-group mb-3">
                 <label for="username" class="form-label">Email</label>
@@ -86,6 +91,39 @@
 
   <script>
     const API_BASE = window.location.origin;
+
+    // --- DEMONSTRACAO ---
+    fetch(`${API_BASE}/api/demo`)
+        .then(res => res.ok ? res.json() : { ativo: false })
+        .then(data => {
+            if (data.ativo) {
+                document.getElementById('demo-box').classList.remove('d-none');
+            }
+        })
+        .catch(() => {});
+
+    document.getElementById('btn-demo').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-demo');
+        btn.innerText = "Entrando...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/login/demo`, { method: 'POST' });
+            if (res.ok) {
+                const user = await res.json();
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                window.location.href = 'minha-empresa.html';
+            } else {
+                const erro = await res.json();
+                alert(erro.error || "Conta demo indisponível.");
+            }
+        } catch (err) {
+            alert("Erro de conexão com o servidor.");
+        } finally {
+            btn.innerText = "Entrar como demonstração";
+            btn.disabled = false;
+        }
+    });
 
     // --- LOGIN ---
     document.getElementById('login-form').addEventListener('submit', async (e) => {
