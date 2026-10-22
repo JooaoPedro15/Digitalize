@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const admin = require("../../main/resources/front-end/webapp/public/js/admin.js");
+const admin = require("../../main/resources/static/js/admin.js");
 
 test("escapeHtml neutralizes HTML-sensitive characters", () => {
   assert.equal(

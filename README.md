@@ -16,11 +16,12 @@ O trabalho original foi desenvolvido em grupo no contexto acadêmico da PUC Mina
 
 ## Status da versão de portfólio
 
-- A aplicação principal desta versão roda pelo backend Java/Spark em `Codigo/src/main/java`;
-- O front-end estático é servido pelo próprio backend e fica em `Codigo/src/main/resources/front-end/webapp/public`;
+- **Site no ar:** https://digitalize-vaux.onrender.com (use o botão "Entrar como demonstração" na tela de login);
+- Backend em **Java 17 + Spring Boot**, com Spring Data JPA, Bean Validation e migrações com Flyway, em `Codigo/src/main/java/com/digitalize`;
+- O front-end estático é servido pelo próprio Spring Boot a partir de `Codigo/src/main/resources/static`;
 - O PostgreSQL é necessário para testar o fluxo completo de usuários, empresas, importações e posts;
-- A integração com Azure OpenAI é opcional. Quando as variáveis não estão configuradas, o Guia de Postagem usa fallback local para manter a demonstração funcional;
-- Arquivos de build, IDE, dados locais, conflitos de merge e credenciais reais não fazem parte da versão pública do portfólio.
+- A integração com Azure OpenAI é opcional. Quando as variáveis não estão configuradas, o Guia de Postagem é gerado localmente a partir das métricas;
+- Arquivos de build, IDE, dados locais e credenciais reais não fazem parte da versão pública do portfólio.
 
 ## Minhas principais contribuições
 
@@ -45,48 +46,55 @@ O trabalho original foi desenvolvido em grupo no contexto acadêmico da PUC Mina
 - Amália Soares Vieira de Vasconcelos
 - Max do Val Machado
 
-## Instruções de utilização
+## Arquitetura
 
-O projeto contém uma aplicação Java com Spark, integração com PostgreSQL e arquivos de front-end estático.
+O backend é organizado por funcionalidade, cada pacote com entidade, repositório, serviço e controller:
 
-## Backend oficial
+| Pacote | Responsabilidade |
+|---|---|
+| `usuario` | Cadastro, login (senha com BCrypt) e administrador inicial |
+| `empresa` | Cadastro e aprovação das empresas |
+| `canal` | Perfis da empresa nas redes sociais |
+| `importacao` | Registro dos CSVs de métricas importados |
+| `post` | Publicações e suas métricas |
+| `guia` | Análise de engajamento e geração do Guia de Postagem |
+| `demo` | Conta de demonstração com dados de exemplo |
+| `comum`, `config` | Tratamento de erros, health check e conexão com o banco |
 
-Nesta versão de portfólio, o backend oficial é o Java com Spark, localizado em `Codigo/src/main/java`. O front-end estático fica em `Codigo/src/main/resources/front-end/webapp/public` e é servido pelo próprio backend Spark.
+O banco fica no schema `digitalize` e é criado pelo Flyway a partir de `Codigo/src/main/resources/db/migration`. O Hibernate apenas valida se as entidades batem com as tabelas (`ddl-auto=validate`).
 
-O servidor Node/Express mantido em `Codigo/src/main/resources/front-end/webapp/server.js` é um protótipo legado das primeiras sprints. Ele permanece no repositório apenas como referência histórica do desenvolvimento, mas não deve ser usado como backend principal.
+## Como executar localmente
 
-Para executar a versão backend oficial, é necessário ter:
+É necessário ter Java 17 (ou mais recente) e um PostgreSQL. O Maven não precisa estar instalado: o projeto usa o Maven Wrapper.
 
-- Java 17, conforme indicado em `.java-version`;
-- Maven;
-- PostgreSQL configurado;
-- Variáveis de ambiente de banco de dados, quando aplicável.
+Use o arquivo `.env.example` como referência: copie para `.env` e preencha os valores. O Spring Boot carrega esse arquivo automaticamente quando ele está na raiz do repositório ou na pasta `Codigo`.
 
-Use o arquivo `.env.example` como referência para configurar o ambiente local. Ele lista as variáveis esperadas sem expor credenciais reais. Para usar localmente, copie para `.env` e preencha os valores necessários; o backend Java carrega esse arquivo automaticamente quando ele existir na raiz do projeto ou na pasta pai de execução.
+Variáveis principais:
 
-Se a variável `DATABASE_URL` estiver definida (formato `postgresql://usuario:senha@host/banco`, usado por provedores como Neon e Render), ela tem prioridade. Caso contrário, o backend Java tenta usar as variáveis `DB_URL`, `DB_USER` e `DB_PASS`. Caso elas não estejam configuradas, o projeto usa o banco local `digitalize` em `localhost:5432`.
+- `DATABASE_URL`: connection string no formato `postgresql://usuario:senha@host/banco` (Neon, Render). Tem prioridade sobre as demais;
+- `DB_URL`, `DB_USER`, `DB_PASS`: alternativa no formato JDBC. Sem nenhuma delas, o projeto usa `jdbc:postgresql://localhost:5432/digitalize`;
+- `DIGITALIZE_ADMIN_EMAIL` e `DIGITALIZE_ADMIN_PASSWORD`: criam o administrador inicial;
+- `DIGITALIZE_DEMO=true`: cria a conta de demonstração.
 
-Para criar um usuário administrador inicial durante a migração do banco, configure também:
-
-- `DIGITALIZE_ADMIN_EMAIL`;
-- `DIGITALIZE_ADMIN_PASSWORD`.
-
-Na pasta `Codigo`, o projeto pode ser compilado e executado com Maven:
+Na pasta `Codigo`:
 
 ```bash
-mvn package
-java -jar target/backend-fixed-0.1.0.jar
+./mvnw spring-boot:run
 ```
 
-O servidor sobe, por padrão, na porta `8080`, ou na porta definida pela variável de ambiente `PORT`.
+Para rodar os testes:
 
-Depois que o servidor iniciar, acesse:
+```bash
+./mvnw test
+```
+
+O servidor sobe na porta `8080`, ou na porta definida em `PORT`. Depois de iniciar:
 
 - Aplicação web: `http://localhost:8080`;
-- Health check da API: `http://localhost:8080/health`;
+- Health check: `http://localhost:8080/health`;
 - Painel administrativo: `http://localhost:8080/admin.html`.
 
-Fluxo principal para testar a versão de portfólio:
+Fluxo principal para testar:
 
 1. Criar um usuário comum pela tela de login;
 2. Cadastrar uma empresa pelo site;
@@ -94,12 +102,6 @@ Fluxo principal para testar a versão de portfólio:
 4. Entrar em "Minha Empresa";
 5. Importar um CSV em `importacao.html`;
 6. Gerar o Guia de Postagem.
-
-Observações técnicas desta versão:
-
-- As senhas de novos usuários são armazenadas com hash PBKDF2 no backend Java;
-- O Guia de Postagem funciona com Azure OpenAI quando as variáveis forem configuradas, mas possui fallback local para manter a aplicação utilizável em ambiente de portfólio;
-- O arquivo `.env` real não deve ser versionado. Use apenas `.env.example` como referência pública.
 
 ## Modo demonstração
 
@@ -109,7 +111,7 @@ Os posts de exemplo são recriados a cada reinicialização, com datas relativas
 
 ## Deploy
 
-O repositório inclui um `Dockerfile` (build com Maven e execução com Java 17) e um `render.yaml` para publicação no [Render](https://render.com) com banco PostgreSQL externo (por exemplo, [Neon](https://neon.tech)).
+O repositório inclui um `Dockerfile` (build com Maven e execução com Java 17, com limites de memória para o plano gratuito) e um `render.yaml` para publicação no [Render](https://render.com) com banco PostgreSQL externo (por exemplo, [Neon](https://neon.tech)).
 
 1. Criar um banco PostgreSQL no Neon e copiar a connection string;
 2. No Render, criar um novo Blueprint apontando para este repositório;
