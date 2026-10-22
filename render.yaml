@@ -3,6 +3,7 @@ services:
     name: digitalize
     runtime: docker
     plan: free
+    region: ohio
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
