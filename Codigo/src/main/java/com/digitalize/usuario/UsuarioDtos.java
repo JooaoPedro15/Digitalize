@@ -1,8 +1,11 @@
 package com.digitalize.usuario;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import java.time.Instant;
 
 public final class UsuarioDtos {
 
@@ -26,6 +29,13 @@ public final class UsuarioDtos {
     public record LoginRequest(
             @NotBlank(message = "Informe email e senha.") String email,
             @NotBlank(message = "Informe email e senha.") String senha) {
+    }
+
+    /** Resposta do login: o token vai no cabeçalho Authorization das próximas requisições. */
+    public record LoginResponse(
+            String token,
+            @JsonProperty("expira_em") Instant expiraEm,
+            UsuarioResponse usuario) {
     }
 
     /**

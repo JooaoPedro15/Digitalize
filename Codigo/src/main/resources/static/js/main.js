@@ -48,15 +48,10 @@ class DigitalizeApp {
 
     async loadData() {
         try {
-            const [empresas, produtos, usuarios, parceiros, avaliacoes] = await Promise.all([
-                this.fetchData('/api/empresas'),
-                this.fetchData('/api/produtos'),
-                this.fetchData('/api/usuarios'),
-                this.fetchData('/api/parceiros'),
-                this.fetchData('/api/avaliacoes')
-            ]);
+            // Vitrine pública: só empresas aprovadas
+            const empresas = await this.fetchData('/api/empresas/publicas');
 
-            this.data = { empresas, produtos, usuarios, parceiros, avaliacoes };
+            this.data = { ...this.data, empresas };
             console.log('Dados carregados:', this.data);
         } catch (error) {
             console.error('Erro crítico ao carregar dados:', error);

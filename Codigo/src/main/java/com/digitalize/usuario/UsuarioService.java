@@ -43,6 +43,13 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
+    public UsuarioResponse buscar(Long id) {
+        return usuarios.findById(id)
+                .map(UsuarioResponse::de)
+                .orElseThrow(() -> ApiException.naoEncontrado("Usuário não encontrado."));
+    }
+
+    @Transactional(readOnly = true)
     public List<UsuarioResponse> listar() {
         return usuarios.findAll().stream().map(UsuarioResponse::de).toList();
     }

@@ -5,6 +5,7 @@ import com.digitalize.canal.CanalService;
 import com.digitalize.importacao.ImportacaoRepository;
 import com.digitalize.post.PostDtos.PostRequest;
 import com.digitalize.post.PostDtos.PostResponse;
+import com.digitalize.seguranca.UsuarioLogado;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +30,8 @@ public class PostService {
      * só atualiza as métricas. Assim reimportar o mesmo CSV não duplica dados.
      */
     @Transactional
-    public void salvar(PostRequest request) {
-        Canal canal = canalService.buscar(request.canalId());
+    public void salvar(PostRequest request, UsuarioLogado solicitante) {
+        Canal canal = canalService.buscarComAcesso(request.canalId(), solicitante);
         String legenda = request.legenda() == null ? "" : request.legenda();
 
         Post post = posts.findByCanalIdAndPublicadoEmAndLegenda(canal.getId(), request.dataHora(), legenda)
@@ -56,7 +57,8 @@ public class PostService {
 
     /** Lista os posts do canal entre as datas (inclusive). */
     @Transactional(readOnly = true)
-    public List<PostResponse> listar(Long canalId, LocalDate inicio, LocalDate fim) {
+    public List<PostResponse> listar(Long canalId, LocalDate inicio, LocalDate fim, UsuarioLogado solicitante) {
+        canalService.buscarComAcesso(canalId, solicitante);
         return posts.findByCanalIdAndPublicadoEmGreaterThanEqualAndPublicadoEmLessThanOrderByPublicadoEmAsc(
                         canalId, inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay())
                 .stream()

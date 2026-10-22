@@ -1,5 +1,8 @@
 package com.digitalize.guia;
 
+import com.digitalize.seguranca.UsuarioLogado;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +17,7 @@ public class GuiaController {
     }
 
     @GetMapping("/empresa/{cnpj}/guia-postagem")
-    public GuiaPostagem gerar(@PathVariable String cnpj) {
-        return guiaService.gerar(cnpj);
+    public GuiaPostagem gerar(@PathVariable String cnpj, @AuthenticationPrincipal Jwt jwt) {
+        return guiaService.gerar(cnpj, UsuarioLogado.de(jwt));
     }
 }

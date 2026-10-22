@@ -1,6 +1,9 @@
 package com.digitalize.demo;
 
 import com.digitalize.comum.ApiException;
+import com.digitalize.seguranca.TokenService;
+import com.digitalize.seguranca.TokenService.TokenEmitido;
+import com.digitalize.usuario.UsuarioDtos.LoginResponse;
 import com.digitalize.usuario.UsuarioDtos.UsuarioResponse;
 import com.digitalize.usuario.UsuarioService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +17,12 @@ public class DemoController {
 
     private final DemoSeeder demo;
     private final UsuarioService usuarioService;
+    private final TokenService tokenService;
 
-    public DemoController(DemoSeeder demo, UsuarioService usuarioService) {
+    public DemoController(DemoSeeder demo, UsuarioService usuarioService, TokenService tokenService) {
         this.demo = demo;
         this.usuarioService = usuarioService;
+        this.tokenService = tokenService;
     }
 
     @GetMapping("/api/demo")
@@ -26,10 +31,12 @@ public class DemoController {
     }
 
     @PostMapping("/api/login/demo")
-    public UsuarioResponse entrar() {
+    public LoginResponse entrar() {
         if (!demo.ativo()) {
             throw ApiException.naoEncontrado("Modo demonstração desativado.");
         }
-        return usuarioService.autenticar(DemoSeeder.EMAIL, DemoSeeder.SENHA);
+        UsuarioResponse usuario = usuarioService.autenticar(DemoSeeder.EMAIL, DemoSeeder.SENHA);
+        TokenEmitido token = tokenService.emitir(usuario);
+        return new LoginResponse(token.token(), token.expiraEm(), usuario);
     }
 }

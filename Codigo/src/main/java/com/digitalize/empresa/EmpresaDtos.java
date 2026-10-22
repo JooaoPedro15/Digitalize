@@ -70,6 +70,28 @@ public final class EmpresaDtos {
         }
     }
 
+    /** Dados que podem aparecer na vitrine pública do site. */
+    public record EmpresaPublicaResponse(
+            String cnpj,
+            @JsonProperty("nome_fantasia") String nomeFantasia,
+            @JsonProperty("razao_social") String razaoSocial,
+            String segmento,
+            String endereco,
+            String status,
+            @JsonProperty("email_contato") String emailContato) {
+
+        public static EmpresaPublicaResponse de(Empresa empresa) {
+            return new EmpresaPublicaResponse(
+                    empresa.getCnpj(),
+                    empresa.getNomeFantasia(),
+                    empresa.getRazaoSocial(),
+                    empresa.getSegmento(),
+                    empresa.getEndereco(),
+                    empresa.getStatus().rotulo(),
+                    empresa.getEmailContato());
+        }
+    }
+
     public record CadastroResponse(String message, String mensagem, String id) {
 
         public static CadastroResponse de(Empresa empresa) {

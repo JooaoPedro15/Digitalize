@@ -25,11 +25,11 @@ class AuthSystem {
             });
 
             const data = await this.readJson(response);
-            const usuario = data.usuario || data;
+            const usuario = data.usuario;
 
-            if (response.ok && usuario && usuario.email) {
+            if (response.ok && data.token && usuario) {
                 this.currentUser = usuario;
-                localStorage.setItem('currentUser', JSON.stringify(usuario));
+                Sessao.salvar(data);
                 this.updateUI();
                 return { success: true, message: data.message || 'Login realizado com sucesso' };
             }
@@ -75,7 +75,7 @@ class AuthSystem {
 
     logout() {
         this.currentUser = null;
-        localStorage.removeItem('currentUser');
+        Sessao.encerrar();
         this.updateUI();
         window.location.href = '/';
     }

@@ -6,6 +6,7 @@ import com.digitalize.comum.ApiException;
 import com.digitalize.comum.Cnpj;
 import com.digitalize.empresa.Empresa;
 import com.digitalize.empresa.EmpresaService;
+import com.digitalize.seguranca.UsuarioLogado;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +27,8 @@ public class CanalService {
     }
 
     @Transactional
-    public Canal criar(CanalRequest request) {
-        Empresa empresa = empresaService.buscar(Cnpj.validar(request.empresaCnpj()));
+    public Canal criar(CanalRequest request, UsuarioLogado solicitante) {
+        Empresa empresa = empresaService.buscarComAcesso(Cnpj.validar(request.empresaCnpj()), solicitante);
         String plataforma = textoOuPadrao(request.plataforma(), PLATAFORMA_PADRAO);
         String identificador = textoOuPadrao(request.canalIdentificador(), IDENTIFICADOR_PADRAO);
 
@@ -45,16 +46,20 @@ public class CanalService {
     }
 
     @Transactional(readOnly = true)
-    public List<CanalResponse> listarPorEmpresa(String cnpj) {
-        return canais.findByEmpresaCnpjOrderByIdAsc(Cnpj.somenteDigitos(cnpj)).stream()
+    public List<CanalResponse> listarPorEmpresa(String cnpj, UsuarioLogado solicitante) {
+        Empresa empresa = empresaService.buscarComAcesso(cnpj, solicitante);
+        return canais.findByEmpresaCnpjOrderByIdAsc(empresa.getCnpj()).stream()
                 .map(CanalResponse::de)
                 .toList();
     }
 
+    /** Busca o canal conferindo se quem pediu é responsável pela empresa dona dele (ou admin). */
     @Transactional(readOnly = true)
-    public Canal buscar(Long id) {
-        return canais.findById(id)
+    public Canal buscarComAcesso(Long id, UsuarioLogado solicitante) {
+        Canal canal = canais.findById(id)
                 .orElseThrow(() -> ApiException.naoEncontrado("Canal não encontrado."));
+        solicitante.exigirAcesso(canal.getEmpresa());
+        return canal;
     }
 
     private static String textoOuPadrao(String valor, String padrao) {

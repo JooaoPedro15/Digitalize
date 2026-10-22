@@ -121,7 +121,7 @@ public class DemoSeeder implements ApplicationRunner {
 
         LocalDate hoje = LocalDate.now();
         LocalDate inicio = hoje.minusDays(28);
-        Importacao importacao = importacaoService.registrar(canal.getId(), ARQUIVO, inicio, hoje, StatusImportacao.PROCESSADA);
+        Importacao importacao = importacaoService.registrar(canal, ARQUIVO, inicio, hoje, StatusImportacao.PROCESSADA);
 
         List<Post> novos = new ArrayList<>();
         for (int i = 0; i < 24; i++) {

@@ -18,4 +18,6 @@ public interface EmpresaRepository extends JpaRepository<Empresa, Long> {
 
     @EntityGraph(attributePaths = "usuario")
     List<Empresa> findByUsuarioEmailOrderByNomeFantasiaAsc(String email);
+
+    List<Empresa> findByStatusOrderByNomeFantasiaAsc(StatusEmpresa status);
 }

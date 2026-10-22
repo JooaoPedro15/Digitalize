@@ -2,11 +2,15 @@ package com.digitalize.empresa;
 
 import com.digitalize.comum.Mensagem;
 import com.digitalize.empresa.EmpresaDtos.CadastroResponse;
+import com.digitalize.empresa.EmpresaDtos.EmpresaPublicaResponse;
 import com.digitalize.empresa.EmpresaDtos.EmpresaRequest;
 import com.digitalize.empresa.EmpresaDtos.EmpresaResponse;
 import com.digitalize.empresa.EmpresaDtos.StatusRequest;
+import com.digitalize.seguranca.UsuarioLogado;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,15 +34,20 @@ public class EmpresaController {
     /** Cadastro feito pelo próprio empreendedor: entra como pendente. */
     @PostMapping("/api/empresas")
     @ResponseStatus(HttpStatus.CREATED)
-    public CadastroResponse cadastrar(@Valid @RequestBody EmpresaRequest request) {
-        return CadastroResponse.de(empresaService.cadastrar(request, StatusEmpresa.PENDENTE));
+    public CadastroResponse cadastrar(@Valid @RequestBody EmpresaRequest request, @AuthenticationPrincipal Jwt jwt) {
+        return CadastroResponse.de(empresaService.cadastrar(request, UsuarioLogado.de(jwt)));
     }
 
     /** Cadastro feito pelo painel administrativo: já entra aprovada. */
     @PostMapping("/admin/cadastro")
     @ResponseStatus(HttpStatus.CREATED)
     public CadastroResponse cadastrarComoAdmin(@Valid @RequestBody EmpresaRequest request) {
-        return CadastroResponse.de(empresaService.cadastrar(request, StatusEmpresa.APROVADA));
+        return CadastroResponse.de(empresaService.cadastrarComoAdmin(request));
+    }
+
+    @GetMapping("/api/empresas/publicas")
+    public List<EmpresaPublicaResponse> listarPublicas() {
+        return empresaService.listarPublicas();
     }
 
     @GetMapping("/api/empresas")
@@ -47,18 +56,19 @@ public class EmpresaController {
     }
 
     @GetMapping("/api/empresas/usuario/{email}")
-    public List<EmpresaResponse> listarPorResponsavel(@PathVariable String email) {
-        return empresaService.listarPorResponsavel(email);
+    public List<EmpresaResponse> listarPorResponsavel(@PathVariable String email, @AuthenticationPrincipal Jwt jwt) {
+        return empresaService.listarPorResponsavel(email, UsuarioLogado.de(jwt));
     }
 
     @GetMapping("/api/empresas/{cnpj}")
-    public EmpresaResponse detalhar(@PathVariable String cnpj) {
-        return empresaService.detalhar(cnpj);
+    public EmpresaResponse detalhar(@PathVariable String cnpj, @AuthenticationPrincipal Jwt jwt) {
+        return empresaService.detalhar(cnpj, UsuarioLogado.de(jwt));
     }
 
     @PutMapping("/api/empresas/{cnpj}")
-    public Mensagem atualizar(@PathVariable String cnpj, @Valid @RequestBody EmpresaRequest request) {
-        empresaService.atualizar(cnpj, request);
+    public Mensagem atualizar(@PathVariable String cnpj, @Valid @RequestBody EmpresaRequest request,
+                              @AuthenticationPrincipal Jwt jwt) {
+        empresaService.atualizar(cnpj, request, UsuarioLogado.de(jwt));
         return Mensagem.sucesso("Empresa atualizada.");
     }
 

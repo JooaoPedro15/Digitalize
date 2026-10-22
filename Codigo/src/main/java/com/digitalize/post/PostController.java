@@ -2,9 +2,12 @@ package com.digitalize.post;
 
 import com.digitalize.post.PostDtos.PostRequest;
 import com.digitalize.post.PostDtos.PostResponse;
+import com.digitalize.seguranca.UsuarioLogado;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,8 +31,8 @@ public class PostController {
 
     @PostMapping("/posts")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Boolean> salvar(@Valid @RequestBody PostRequest request) {
-        postService.salvar(request);
+    public Map<String, Boolean> salvar(@Valid @RequestBody PostRequest request, @AuthenticationPrincipal Jwt jwt) {
+        postService.salvar(request, UsuarioLogado.de(jwt));
         return Map.of("ok", true);
     }
 
@@ -37,8 +40,9 @@ public class PostController {
     public List<PostResponse> listar(
             @PathVariable Long canalId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @AuthenticationPrincipal Jwt jwt) {
         LocalDate hoje = LocalDate.now();
-        return postService.listar(canalId, start != null ? start : hoje, end != null ? end : hoje);
+        return postService.listar(canalId, start != null ? start : hoje, end != null ? end : hoje, UsuarioLogado.de(jwt));
     }
 }

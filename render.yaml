@@ -10,3 +10,5 @@ services:
         sync: false
       - key: DIGITALIZE_DEMO
         value: "true"
+      - key: JWT_SECRET
+        generateValue: true

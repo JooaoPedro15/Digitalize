@@ -17,7 +17,7 @@ O trabalho original foi desenvolvido em grupo no contexto acadêmico da PUC Mina
 ## Status da versão de portfólio
 
 - **Site no ar:** https://digitalize-vaux.onrender.com (use o botão "Entrar como demonstração" na tela de login);
-- Backend em **Java 17 + Spring Boot**, com Spring Data JPA, Bean Validation e migrações com Flyway, em `Codigo/src/main/java/com/digitalize`;
+- Backend em **Java 17 + Spring Boot**, com Spring Data JPA, Spring Security (JWT), Bean Validation e migrações com Flyway, em `Codigo/src/main/java/com/digitalize`;
 - O front-end estático é servido pelo próprio Spring Boot a partir de `Codigo/src/main/resources/static`;
 - O PostgreSQL é necessário para testar o fluxo completo de usuários, empresas, importações e posts;
 - A integração com Azure OpenAI é opcional. Quando as variáveis não estão configuradas, o Guia de Postagem é gerado localmente a partir das métricas;
@@ -53,6 +53,7 @@ O backend é organizado por funcionalidade, cada pacote com entidade, repositór
 | Pacote | Responsabilidade |
 |---|---|
 | `usuario` | Cadastro, login (senha com BCrypt) e administrador inicial |
+| `seguranca` | Emissão e validação dos tokens JWT e regras de acesso |
 | `empresa` | Cadastro e aprovação das empresas |
 | `canal` | Perfis da empresa nas redes sociais |
 | `importacao` | Registro dos CSVs de métricas importados |
@@ -62,6 +63,18 @@ O backend é organizado por funcionalidade, cada pacote com entidade, repositór
 | `comum`, `config` | Tratamento de erros, health check e conexão com o banco |
 
 O banco fica no schema `digitalize` e é criado pelo Flyway a partir de `Codigo/src/main/resources/db/migration`. O Hibernate apenas valida se as entidades batem com as tabelas (`ddl-auto=validate`).
+
+## Segurança
+
+A API usa **Spring Security com JWT**. No login, o backend devolve um token assinado (HMAC-SHA256, válido por 8 horas) que o front-end envia no cabeçalho `Authorization: Bearer ...` de cada requisição. Como o token não depende de sessão no servidor, o login continua válido mesmo quando a instância do Render reinicia.
+
+| Quem | Pode acessar |
+|---|---|
+| Visitante | Site, login, login demo, cadastro de usuário e vitrine de empresas aprovadas (`/api/empresas/publicas`) |
+| Usuário logado | Apenas as próprias empresas, com seus canais, importações, posts e Guia de Postagem |
+| Administrador | Todas as empresas e usuários, aprovação, exclusão e cadastro pelo painel |
+
+A posse da empresa é conferida nos serviços (`UsuarioLogado.exigirAcesso`), então um usuário não acessa dados de outro trocando o CNPJ ou o id do canal na URL. Respostas de erro: `401` sem login ou com token inválido, `403` sem permissão.
 
 ## Como executar localmente
 
@@ -74,7 +87,8 @@ Variáveis principais:
 - `DATABASE_URL`: connection string no formato `postgresql://usuario:senha@host/banco` (Neon, Render). Tem prioridade sobre as demais;
 - `DB_URL`, `DB_USER`, `DB_PASS`: alternativa no formato JDBC. Sem nenhuma delas, o projeto usa `jdbc:postgresql://localhost:5432/digitalize`;
 - `DIGITALIZE_ADMIN_EMAIL` e `DIGITALIZE_ADMIN_PASSWORD`: criam o administrador inicial;
-- `DIGITALIZE_DEMO=true`: cria a conta de demonstração.
+- `DIGITALIZE_DEMO=true`: cria a conta de demonstração;
+- `JWT_SECRET`: chave de assinatura dos tokens, com pelo menos 32 caracteres. Sem ela, uma chave temporária é gerada a cada execução.
 
 Na pasta `Codigo`:
 
@@ -115,5 +129,5 @@ O repositório inclui um `Dockerfile` (build com Maven e execução com Java 17,
 
 1. Criar um banco PostgreSQL no Neon e copiar a connection string;
 2. No Render, criar um novo Blueprint apontando para este repositório;
-3. Preencher a variável `DATABASE_URL` com a connection string do Neon;
+3. Preencher a variável `DATABASE_URL` com a connection string do Neon (o `JWT_SECRET` é gerado pelo próprio Render);
 4. Aguardar o build. A aplicação fica disponível no endereço gerado pelo Render.

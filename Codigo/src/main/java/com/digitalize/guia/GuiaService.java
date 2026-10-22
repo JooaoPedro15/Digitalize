@@ -3,6 +3,7 @@ package com.digitalize.guia;
 import com.digitalize.empresa.EmpresaService;
 import com.digitalize.post.Post;
 import com.digitalize.post.PostRepository;
+import com.digitalize.seguranca.UsuarioLogado;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -53,8 +54,8 @@ public class GuiaService {
     }
 
     @Transactional(readOnly = true)
-    public GuiaPostagem gerar(String cnpj) {
-        String cnpjEmpresa = empresaService.buscar(cnpj).getCnpj();
+    public GuiaPostagem gerar(String cnpj, UsuarioLogado solicitante) {
+        String cnpjEmpresa = empresaService.buscarComAcesso(cnpj, solicitante).getCnpj();
         LocalDate hoje = LocalDate.now();
         List<Post> doPeriodo = posts.listarDaEmpresaNoPeriodo(
                 cnpjEmpresa, hoje.minusDays(DIAS_ANALISADOS).atStartOfDay(), hoje.plusDays(1).atStartOfDay());
