@@ -28,6 +28,7 @@ public class EmpresaService {
     /** Cadastro feito pelo empreendedor: ele mesmo é o responsável e a empresa aguarda aprovação. */
     @Transactional
     public Empresa cadastrar(EmpresaRequest request, UsuarioLogado solicitante) {
+        solicitante.recusarSeDemonstracao();
         Usuario responsavel = usuarios.getReferenceById(solicitante.id());
         return criar(request, responsavel, StatusEmpresa.PENDENTE);
     }
@@ -35,6 +36,7 @@ public class EmpresaService {
     /** Edição volta a empresa para PENDENTE, para o admin revisar os dados novos. */
     @Transactional
     public void atualizar(String cnpj, EmpresaRequest request, UsuarioLogado solicitante) {
+        solicitante.recusarSeDemonstracao();
         Empresa empresa = buscarComAcesso(cnpj, solicitante);
         preencher(empresa, request);
         empresa.setStatus(StatusEmpresa.PENDENTE);

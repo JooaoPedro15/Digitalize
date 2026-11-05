@@ -48,4 +48,14 @@ class UsuarioLogadoTest {
         assertThat(new UsuarioLogado(5L, "ana@teste.com", false).podeAcessar(semDono)).isFalse();
         assertThat(new UsuarioLogado(1L, "admin@teste.com", true).podeAcessar(semDono)).isTrue();
     }
+
+    @Test
+    void contaDeDemonstracaoNaoAlteraCadastros() {
+        UsuarioLogado demo = new UsuarioLogado(1L, UsuarioLogado.EMAIL_DEMONSTRACAO, false);
+
+        assertThatThrownBy(demo::recusarSeDemonstracao)
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getStatus())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+    }
 }

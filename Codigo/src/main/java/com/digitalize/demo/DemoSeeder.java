@@ -11,6 +11,7 @@ import com.digitalize.importacao.ImportacaoService;
 import com.digitalize.importacao.StatusImportacao;
 import com.digitalize.post.Post;
 import com.digitalize.post.PostRepository;
+import com.digitalize.seguranca.UsuarioLogado;
 import com.digitalize.usuario.Papel;
 import com.digitalize.usuario.Usuario;
 import com.digitalize.usuario.UsuarioService;
@@ -37,7 +38,7 @@ import java.util.List;
 @Component
 public class DemoSeeder implements ApplicationRunner {
 
-    public static final String EMAIL = "demo@digitalize.app";
+    public static final String EMAIL = UsuarioLogado.EMAIL_DEMONSTRACAO;
     static final String SENHA = "demo-digitalize";
 
     private static final Logger log = LoggerFactory.getLogger(DemoSeeder.class);
