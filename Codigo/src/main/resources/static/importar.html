@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Importar métricas | Digitalize</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/digitalize.css">
+  <script type="module" src="js/paginas/importar.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="app-menu" id="menu"></aside>
+    <main class="app-conteudo">
+      <header class="cabecalho-pagina">
+        <div>
+          <h1>Importar métricas</h1>
+          <p id="para-empresa">Envie o CSV exportado do Meta Business Suite.</p>
+        </div>
+      </header>
+
+      <div class="aviso aviso-erro" id="sem-empresa" hidden>Cadastre o seu negócio no <a href="painel.html">painel</a> antes de importar métricas.</div>
+
+      <ol class="etapas" id="etapas">
+        <li class="etapa bloco">
+          <h2>Escolha o arquivo</h2>
+          <label class="soltar-arquivo" id="soltar">
+            <strong>Arraste o arquivo CSV para cá ou clique para escolher</strong>
+            <span>No Meta Business Suite: Insights, Conteúdo, Exportar dados, formato CSV.</span>
+            <input type="file" id="arquivo" accept=".csv,text/csv" class="oculto-visualmente">
+          </label>
+          <p>Não tem um arquivo agora? <button type="button" class="botao botao-discreto botao-pequeno" id="usar-exemplo">Usar o arquivo de exemplo</button> com um mês de posts de uma confeitaria.</p>
+          <div class="aviso" id="erro-arquivo" hidden></div>
+        </li>
+
+        <li class="etapa bloco" id="etapa-colunas" hidden>
+          <h2>Confira as colunas</h2>
+          <p id="resumo-arquivo"></p>
+          <div class="mapeamento" id="mapeamento"></div>
+          <div class="tabela-envelope">
+            <table>
+              <caption class="oculto-visualmente">Primeiras linhas do arquivo</caption>
+              <thead id="previa-cabecalho"></thead>
+              <tbody id="previa-corpo"></tbody>
+            </table>
+          </div>
+        </li>
+
+        <li class="etapa bloco" id="etapa-importar" hidden>
+          <h2>Importe</h2>
+          <p id="resumo-importacao"></p>
+          <div class="aviso" id="resultado" hidden></div>
+          <div class="acoes">
+            <button type="button" class="botao botao-principal" id="importar">Importar posts</button>
+            <a class="botao botao-secundario" href="painel.html" id="ver-painel" hidden>Ver o guia no painel</a>
+          </div>
+        </li>
+      </ol>
+    </main>
+  </div>
+</body>
+</html>
