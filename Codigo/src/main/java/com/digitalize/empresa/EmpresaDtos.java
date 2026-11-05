@@ -11,10 +11,7 @@ public final class EmpresaDtos {
     private EmpresaDtos() {
     }
 
-    /**
-     * Dados de cadastro/edição. Aceita snake_case e camelCase porque as telas
-     * atuais enviam os dois formatos.
-     */
+    /** Dados de cadastro e edição de empresa. */
     public record EmpresaRequest(
             String cnpj,
 
@@ -33,9 +30,6 @@ public final class EmpresaDtos {
 
             @Size(max = 200, message = "Endereço muito longo.")
             String endereco,
-
-            @JsonProperty("responsavel_email") @JsonAlias({"responsavelEmail", "emailResponsavel"})
-            String responsavelEmail,
 
             @JsonProperty("email_contato") @JsonAlias("emailContato")
             @Email(message = "Email de contato inválido.")

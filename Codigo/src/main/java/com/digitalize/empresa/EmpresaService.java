@@ -9,7 +9,6 @@ import com.digitalize.seguranca.UsuarioLogado;
 import com.digitalize.usuario.Usuario;
 import com.digitalize.usuario.UsuarioRepository;
 import com.digitalize.usuario.UsuarioService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +30,6 @@ public class EmpresaService {
     public Empresa cadastrar(EmpresaRequest request, UsuarioLogado solicitante) {
         Usuario responsavel = usuarios.getReferenceById(solicitante.id());
         return criar(request, responsavel, StatusEmpresa.PENDENTE);
-    }
-
-    /** Cadastro pelo painel administrativo: já entra aprovada; o responsável é opcional. */
-    @Transactional
-    public Empresa cadastrarComoAdmin(EmpresaRequest request) {
-        return criar(request, responsavelPorEmail(request.responsavelEmail()), StatusEmpresa.APROVADA);
     }
 
     /** Edição volta a empresa para PENDENTE, para o admin revisar os dados novos. */
@@ -78,12 +71,8 @@ public class EmpresaService {
     }
 
     @Transactional(readOnly = true)
-    public List<EmpresaResponse> listarPorResponsavel(String email, UsuarioLogado solicitante) {
-        String emailNormalizado = UsuarioService.normalizarEmail(email);
-        if (!solicitante.admin() && !emailNormalizado.equals(solicitante.email())) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Você só pode ver as suas empresas.");
-        }
-        return empresas.findByUsuarioEmailOrderByNomeFantasiaAsc(emailNormalizado)
+    public List<EmpresaResponse> listarMinhas(UsuarioLogado solicitante) {
+        return empresas.findByUsuarioIdOrderByNomeFantasiaAsc(solicitante.id())
                 .stream().map(EmpresaResponse::de).toList();
     }
 
@@ -120,15 +109,6 @@ public class EmpresaService {
         empresa.setSegmento(textoOuNulo(request.segmento()));
         empresa.setEndereco(textoOuNulo(request.endereco()));
         empresa.setEmailContato(textoOuNulo(UsuarioService.normalizarEmail(request.emailContato())));
-    }
-
-    private Usuario responsavelPorEmail(String email) {
-        if (email == null || email.isBlank()) {
-            return null;
-        }
-        return usuarios.findByEmail(UsuarioService.normalizarEmail(email))
-                .orElseThrow(() -> ApiException.requisicaoInvalida(
-                        "O email do responsável precisa ser de um usuário cadastrado."));
     }
 
     private static String textoOuNulo(String valor) {

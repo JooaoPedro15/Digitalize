@@ -24,7 +24,7 @@ import java.io.IOException;
  * Regras de acesso da API.
  *
  * - Público: front-end, health check, login, login demo, cadastro e vitrine de empresas aprovadas;
- * - Admin: listar todas as empresas e usuários, aprovar/rejeitar, excluir e cadastrar pelo painel;
+ * - Admin: listar todas as empresas e usuários, aprovar/rejeitar e excluir;
  * - Demais rotas da API: qualquer usuário logado (a posse da empresa é conferida nos serviços).
  */
 @Configuration
@@ -50,9 +50,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/usuarios", "/api/empresas").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/empresas/*/status").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/empresas/*").hasRole("ADMIN")
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                .requestMatchers("/api/**", "/canais/**", "/importacoes/**", "/posts/**", "/empresa/**").authenticated()
+                .requestMatchers("/api/**").authenticated()
 
                 // Arquivos estáticos do front-end (HTML, CSS, JS, imagens)
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()

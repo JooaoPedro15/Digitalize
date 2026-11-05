@@ -38,13 +38,6 @@ public class EmpresaController {
         return CadastroResponse.de(empresaService.cadastrar(request, UsuarioLogado.de(jwt)));
     }
 
-    /** Cadastro feito pelo painel administrativo: já entra aprovada. */
-    @PostMapping("/admin/cadastro")
-    @ResponseStatus(HttpStatus.CREATED)
-    public CadastroResponse cadastrarComoAdmin(@Valid @RequestBody EmpresaRequest request) {
-        return CadastroResponse.de(empresaService.cadastrarComoAdmin(request));
-    }
-
     @GetMapping("/api/empresas/publicas")
     public List<EmpresaPublicaResponse> listarPublicas() {
         return empresaService.listarPublicas();
@@ -55,9 +48,9 @@ public class EmpresaController {
         return empresaService.listar();
     }
 
-    @GetMapping("/api/empresas/usuario/{email}")
-    public List<EmpresaResponse> listarPorResponsavel(@PathVariable String email, @AuthenticationPrincipal Jwt jwt) {
-        return empresaService.listarPorResponsavel(email, UsuarioLogado.de(jwt));
+    @GetMapping("/api/empresas/minhas")
+    public List<EmpresaResponse> listarMinhas(@AuthenticationPrincipal Jwt jwt) {
+        return empresaService.listarMinhas(UsuarioLogado.de(jwt));
     }
 
     @GetMapping("/api/empresas/{cnpj}")
