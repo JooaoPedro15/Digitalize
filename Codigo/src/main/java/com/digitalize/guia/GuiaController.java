@@ -16,7 +16,7 @@ public class GuiaController {
         this.guiaService = guiaService;
     }
 
-    @GetMapping("/empresa/{cnpj}/guia-postagem")
+    @GetMapping("/api/empresas/{cnpj}/guia")
     public GuiaPostagem gerar(@PathVariable String cnpj, @AuthenticationPrincipal Jwt jwt) {
         return guiaService.gerar(cnpj, UsuarioLogado.de(jwt));
     }
