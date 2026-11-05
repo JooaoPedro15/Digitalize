@@ -46,6 +46,8 @@ class GuiaServiceTest {
         GuiaPostagem guia = GuiaService.guiaLocal(analise);
 
         assertThat(guia.melhoresHorarios()).containsExactly("20:00", "09:00");
-        assertThat(guia.sugestoesPosts().get(0).descricaoLegendada()).contains("Bolo de pote");
+        assertThat(guia.sugestoesPosts().get(0).titulo()).contains("Bolo de pote");
+        assertThat(guia.insights()).anyMatch(texto -> texto.contains("20h"));
+        assertThat(guia.oQueEvitar()).anyMatch(texto -> texto.contains("9h"));
     }
 }

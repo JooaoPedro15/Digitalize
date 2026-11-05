@@ -78,20 +78,36 @@ public class GuiaService {
         }
     }
 
+    /** Guia montado só com as métricas, usado quando a IA não está configurada. */
     static GuiaPostagem guiaLocal(Analise analise) {
-        String inspiracao = analise.melhores().isEmpty() ? "" : corta(analise.melhores().get(0).getLegenda(), 60);
+        int melhorHora = analise.melhoresHorarios().get(0);
+        Post melhorPost = analise.melhores().get(0);
+        Post piorPost = analise.piores().get(0);
+
+        List<GuiaPostagem.Sugestao> sugestoes = analise.melhores().stream()
+                .limit(3)
+                .map(post -> new GuiaPostagem.Sugestao(
+                        "Repita o tema: " + legendaOuPadrao(post, 40),
+                        "Publique algo parecido por volta das " + melhorHora + "h.",
+                        "Esse post teve " + post.engajamentoPorMil() + " interações a cada mil visualizações."))
+                .toList();
+
         return new GuiaPostagem(
-                "Guia gerado sem IA, a partir das métricas do período.",
-                List.of("Replicar padrões dos posts com melhor engajamento",
-                        "Evitar os temas dos posts mais fracos",
-                        "Postar nos melhores horários"),
+                "Guia calculado a partir das métricas de " + analise.total() + " posts do período.",
+                List.of("Os posts das " + melhorHora + "h tiveram o maior engajamento médio.",
+                        "\"" + legendaOuPadrao(melhorPost, 60) + "\" foi o post com mais interações por visualização.",
+                        "O engajamento médio foi de " + analise.mediaPorMil() + " interações a cada mil visualizações."),
                 analise.melhoresHorarios().stream().map(hora -> String.format("%02d:00", hora)).toList(),
-                List.of("Clara", "Objetiva", "Com chamada para ação explícita"),
-                List.of("Postar fora dos horários bons", "Legendas longas demais"),
-                List.of(new GuiaPostagem.Sugestao(
-                        "Ideia 1",
-                        "Inspirada no melhor post: " + inspiracao,
-                        "Baseada no maior engajamento do período")));
+                List.of("Frases curtas e diretas", "Fale como você fala com o cliente no balcão",
+                        "Termine com um convite: encomende, comente ou salve"),
+                List.of("Postar às " + analise.piorHorario() + "h, o horário com menor engajamento.",
+                        "Repetir o formato de \"" + legendaOuPadrao(piorPost, 60) + "\", o post com menos interações."),
+                sugestoes);
+    }
+
+    private static String legendaOuPadrao(Post post, int limite) {
+        String legenda = post.getLegenda();
+        return legenda == null || legenda.isBlank() ? "post sem legenda" : corta(legenda, limite);
     }
 
     private static String corta(String texto, int limite) {
@@ -102,7 +118,8 @@ public class GuiaService {
     }
 
     /** Números calculados sobre os posts do período. */
-    record Analise(int total, List<Post> melhores, List<Post> piores, List<Integer> melhoresHorarios) {
+    record Analise(int total, int mediaPorMil, List<Post> melhores, List<Post> piores,
+                   List<Integer> melhoresHorarios, int piorHorario) {
 
         static Analise de(List<Post> posts) {
             Comparator<Post> porEngajamento = Comparator.comparingInt(Post::engajamentoPorMil);
@@ -120,7 +137,14 @@ public class GuiaService {
                     .map(Map.Entry::getKey)
                     .toList();
 
-            return new Analise(posts.size(), melhores, piores, melhoresHorarios);
+            int piorHorario = mediaPorHora.entrySet().stream()
+                    .min(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElseThrow();
+            int mediaPorMil = (int) Math.round(
+                    posts.stream().mapToInt(Post::engajamentoPorMil).average().orElse(0));
+
+            return new Analise(posts.size(), mediaPorMil, melhores, piores, melhoresHorarios, piorHorario);
         }
 
         String contexto() {
