@@ -1,55 +1,92 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitalize - Plataforma Unificada</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" href="/img/logo.png" type="image/png">
-  <script src="js/sessao.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Digitalize: descubra a melhor hora de postar</title>
+  <meta name="description" content="A Digitalize lê as métricas do Instagram de pequenos negócios e mostra os melhores horários e o tipo de post que mais funciona.">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/digitalize.css">
+  <script type="module" src="js/paginas/inicio.js"></script>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="nav-brand">
-                <img src="img/logo.png" alt="Digitalize" class="logo">
-                <span class="brand-text">Digitalize</span>
-            </div>
-            <nav class="nav-menu">
-                <a href="#" data-page="home" class="nav-link active">Início</a>
-                <a href="#" data-page="empresas" class="nav-link">Empresas</a>
-                <a href="#" data-page="cadastro" class="nav-link">Cadastrar</a>
-                <a href="minha-empresa.html" class="nav-link" id="link-minha-empresa" style="display:none">Minha Empresa</a>
-                <a href="#" data-page="mapa" class="nav-link">Mapa</a>
-                <a href="admin.html" class="nav-link">Admin</a>
-                <a href="#" data-page="avaliacoes" class="nav-link">Avaliações</a>
-                <a href="#" data-page="favoritos" class="nav-link">Favoritos</a>
-                <a href="login.html" data-page="login" class="nav-link" id="login-link">Login</a>
-            
-                </nav>
-            <div class="nav-actions">
-                <div id="user-menu" class="user-menu hidden">
-                    <span id="user-name"></span>
-                    <button id="logout-btn" class="btn btn-sm">Sair</button>
-                </div>
-            </div>
+  <header class="topo">
+    <div class="envelope">
+      <a class="marca" href="./"><img src="img/logo.svg" alt="" width="34" height="34">Digitalize</a>
+      <nav aria-label="Principal" id="navegacao">
+        <a href="#negocios" class="esconder-celular">Negócios</a>
+        <a href="entrar.html">Entrar</a>
+        <a href="entrar.html?aba=criar" class="botao botao-principal">Criar conta</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="envelope abertura" aria-labelledby="titulo">
+      <div class="abertura-texto">
+        <h1 id="titulo">Poste quando os seus clientes estão olhando.</h1>
+        <p>A Digitalize lê as métricas do Instagram do seu negócio e mostra, num guia simples, os melhores horários para postar e o tipo de conteúdo que mais dá resultado.</p>
+        <div class="acoes">
+          <button type="button" class="botao botao-principal" id="entrar-demo">Entrar na demonstração</button>
+          <a class="botao botao-secundario" href="entrar.html?aba=criar">Criar conta grátis</a>
         </div>
-    </header>
+        <p class="nota" id="nota-demo">A demonstração abre o painel da Doce Lar Confeitaria, um negócio fictício com um mês de posts. Não precisa de cadastro.</p>
+        <div class="aviso aviso-erro" id="erro-demo" hidden></div>
+      </div>
 
-    <main id="main-content">
-        <!-- Conteúdo será carregado dinamicamente pelo JavaScript -->
-    </main>
+      <figure class="vitrine-grade" aria-labelledby="legenda-grade">
+        <header>
+          <h2 class="oculto-visualmente">Exemplo de grade de horários</h2>
+          <p id="legenda-grade">Engajamento de uma confeitaria por dia e horário nas últimas seis semanas</p>
+        </header>
+        <div id="grade-exemplo"></div>
+        <div id="legenda-escala"></div>
+        <p class="melhor-horario"><span aria-hidden="true"></span><span>Melhor horário para postar: <strong id="melhor-exemplo"></strong></span></p>
+      </figure>
+    </section>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2025 Digitalize.</p>
+    <section class="secao secao-clara" aria-labelledby="como-funciona">
+      <div class="envelope">
+        <h2 id="como-funciona">Como funciona</h2>
+        <p class="secao-intro">Três passos, sem planilha e sem precisar entender de marketing digital.</p>
+        <ol class="passos">
+          <li>
+            <h3>Cadastre o seu negócio</h3>
+            <p>Nome, CNPJ e cidade. Leva um minuto.</p>
+          </li>
+          <li>
+            <h3>Importe o CSV do Instagram</h3>
+            <p>Exporte as métricas pelo Meta Business Suite e envie o arquivo. A Digitalize reconhece as colunas sozinha.</p>
+          </li>
+          <li>
+            <h3>Siga o guia de postagem</h3>
+            <p>Veja os horários com mais engajamento, os posts que funcionaram melhor e o que evitar.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="secao" id="negocios" aria-labelledby="titulo-negocios">
+      <div class="envelope">
+        <h2 id="titulo-negocios">Negócios na Digitalize</h2>
+        <p class="secao-intro">Empresas cadastradas e aprovadas na plataforma.</p>
+        <div class="campo busca">
+          <label for="busca">Buscar por nome, segmento ou cidade</label>
+          <input id="busca" type="search" autocomplete="off">
         </div>
-    </footer>
+        <ul class="lista-negocios" id="lista-negocios" aria-live="polite"></ul>
+      </div>
+    </section>
+  </main>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/main.js?v=20250616154100"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/gate-importacao.js"></script>
+  <footer class="rodape">
+    <div class="envelope">
+      <p>Digitalize é um projeto acadêmico da PUC Minas, feito por Eduardo Murta, Jamille Ferreira, João Pedro Costa e Silva e Larissa Varella.</p>
+      <a href="https://github.com/JooaoPedro15/Digitalize">Ver o código no GitHub</a>
+    </div>
+  </footer>
 </body>
 </html>
