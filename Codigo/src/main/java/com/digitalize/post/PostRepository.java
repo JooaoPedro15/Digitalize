@@ -6,14 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    Optional<Post> findByCanalIdAndPublicadoEmAndLegenda(Long canalId, LocalDateTime publicadoEm, String legenda);
-
-    List<Post> findByCanalIdAndPublicadoEmGreaterThanEqualAndPublicadoEmLessThanOrderByPublicadoEmAsc(
-            Long canalId, LocalDateTime inicio, LocalDateTime fim);
+    List<Post> findByCanalIdAndPublicadoEmBetween(Long canalId, LocalDateTime inicio, LocalDateTime fim);
 
     @Query("""
             select p from Post p

@@ -2,8 +2,8 @@ package com.digitalize.seguranca;
 
 import com.digitalize.empresa.EmpresaController;
 import com.digitalize.empresa.EmpresaService;
-import com.digitalize.post.PostController;
-import com.digitalize.post.PostService;
+import com.digitalize.importacao.ImportacaoController;
+import com.digitalize.importacao.ImportacaoService;
 import com.digitalize.usuario.UsuarioController;
 import com.digitalize.usuario.UsuarioService;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Confere as regras do SecurityConfig sem banco: os serviços são simulados (mocks).
  */
-@WebMvcTest(controllers = {UsuarioController.class, EmpresaController.class, PostController.class})
+@WebMvcTest(controllers = {UsuarioController.class, EmpresaController.class, ImportacaoController.class})
 @Import({SecurityConfig.class, JwtConfig.class})
 class RegrasDeAcessoTest {
 
@@ -41,7 +41,7 @@ class RegrasDeAcessoTest {
     @MockitoBean
     EmpresaService empresaService;
     @MockitoBean
-    PostService postService;
+    ImportacaoService importacaoService;
     @MockitoBean
     TokenService tokenService;
 
@@ -93,11 +93,12 @@ class RegrasDeAcessoTest {
 
     @Test
     void importarPostsExigeLogin() throws Exception {
-        String corpo = "{\"canal_id\":1,\"data_hora\":\"2026-10-01T10:00:00\"}";
+        String rota = "/api/empresas/12345678000100/importacoes";
+        String corpo = "{\"arquivo\":\"insta.csv\",\"posts\":[{\"publicado_em\":\"2026-10-01T10:00:00\"}]}";
 
-        mvc.perform(post("/posts").contentType(MediaType.APPLICATION_JSON).content(corpo))
+        mvc.perform(post(rota).contentType(MediaType.APPLICATION_JSON).content(corpo))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/posts").with(usuarioComum()).contentType(MediaType.APPLICATION_JSON).content(corpo))
+        mvc.perform(post(rota).with(usuarioComum()).contentType(MediaType.APPLICATION_JSON).content(corpo))
                 .andExpect(status().isCreated());
     }
 }
