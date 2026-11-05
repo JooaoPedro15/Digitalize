@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar na Digitalize</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/digitalize.css">
+  <script type="module" src="js/paginas/entrar.js"></script>
+</head>
+<body class="pagina-entrar">
+  <header class="topo">
+    <div class="envelope">
+      <a class="marca" href="./"><img src="img/logo.svg" alt="" width="34" height="34">Digitalize</a>
+      <nav aria-label="Principal"><a href="./">Voltar ao início</a></nav>
+    </div>
+  </header>
+
+  <main class="painel-entrar">
+    <div class="aviso aviso-atencao" id="aviso-sessao" hidden>Sua sessão expirou. Entre de novo para continuar.</div>
+
+    <section class="caixa" aria-label="Acesso">
+      <div class="abas" role="tablist">
+        <button type="button" role="tab" id="aba-entrar" aria-controls="form-entrar" aria-selected="true">Entrar</button>
+        <button type="button" role="tab" id="aba-criar" aria-controls="form-criar" aria-selected="false">Criar conta</button>
+      </div>
+
+      <form class="formulario" id="form-entrar" role="tabpanel" aria-labelledby="aba-entrar" novalidate>
+        <div class="campo">
+          <label for="entrar-email">Email</label>
+          <input id="entrar-email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="campo">
+          <label for="entrar-senha">Senha</label>
+          <input id="entrar-senha" name="senha" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="aviso" id="erro-entrar" hidden></div>
+        <button type="submit" class="botao botao-principal">Entrar</button>
+      </form>
+
+      <form class="formulario" id="form-criar" role="tabpanel" aria-labelledby="aba-criar" hidden novalidate>
+        <div class="campo">
+          <label for="criar-nome">Seu nome</label>
+          <input id="criar-nome" name="nome" autocomplete="name" required maxlength="120">
+        </div>
+        <div class="campo">
+          <label for="criar-email">Email</label>
+          <input id="criar-email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="campo">
+          <label for="criar-senha">Senha</label>
+          <input id="criar-senha" name="senha" type="password" autocomplete="new-password" minlength="6" maxlength="72" required>
+          <small>Pelo menos 6 caracteres.</small>
+        </div>
+        <div class="aviso" id="erro-criar" hidden></div>
+        <button type="submit" class="botao botao-principal">Criar conta</button>
+      </form>
+    </section>
+
+    <section class="demonstracao" id="caixa-demo" aria-labelledby="titulo-demo">
+      <h2 id="titulo-demo" class="oculto-visualmente">Demonstração</h2>
+      <p>Quer só conhecer? Entre na conta de demonstração da Doce Lar Confeitaria, que já tem um mês de posts importados.</p>
+      <button type="button" class="botao botao-secundario" id="entrar-demo">Entrar na demonstração</button>
+      <div class="aviso" id="erro-demo" hidden></div>
+    </section>
+  </main>
+</body>
+</html>
