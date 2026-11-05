@@ -1,80 +1,77 @@
-/*
- * Sessão do usuário no front-end.
- *
- * Guarda o token JWT recebido no login e o envia no cabeçalho Authorization
- * de todas as chamadas fetch para a própria API. Se o token vencer ou for
- * recusado (401), a sessão é encerrada e o usuário volta para o login.
- *
- * Deve ser o primeiro script de cada página.
+// Sessão do usuário: o token JWT recebido no login fica no localStorage.
+
+const CHAVE_TOKEN = "digitalize.token";
+const CHAVE_USUARIO = "digitalize.usuario";
+
+function ler(chave) {
+  try {
+    return localStorage.getItem(chave);
+  } catch {
+    return null;
+  }
+}
+
+function expirado(token) {
+  try {
+    const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const { exp } = JSON.parse(atob(base64));
+    return !exp || exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
+export function salvarSessao({ token, usuario }) {
+  localStorage.setItem(CHAVE_TOKEN, token);
+  localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
+}
+
+export function encerrarSessao() {
+  try {
+    localStorage.removeItem(CHAVE_TOKEN);
+    localStorage.removeItem(CHAVE_USUARIO);
+  } catch {
+    // sem acesso ao localStorage: não há sessão para encerrar
+  }
+}
+
+/** Token válido, ou null (e a sessão vencida é descartada). */
+export function tokenAtual() {
+  const token = ler(CHAVE_TOKEN);
+  if (token && expirado(token)) {
+    encerrarSessao();
+    return null;
+  }
+  return token;
+}
+
+export function usuarioAtual() {
+  if (!tokenAtual()) return null;
+  try {
+    return JSON.parse(ler(CHAVE_USUARIO));
+  } catch {
+    return null;
+  }
+}
+
+export function ehAdmin(usuario = usuarioAtual()) {
+  return usuario?.tipo === "admin";
+}
+
+/**
+ * Garante que há alguém logado antes de mostrar uma página do painel.
+ * Sem login, manda para a tela de entrar e volta para cá depois.
  */
-(function () {
-    const CHAVE_TOKEN = 'token';
-    const CHAVE_USUARIO = 'currentUser';
-    const PAGINAS_PUBLICAS = ['/', '/index.html', '/login.html'];
-
-    function ler(chave) {
-        try {
-            return localStorage.getItem(chave);
-        } catch (e) {
-            return null;
-        }
-    }
-
-    function tokenExpirado(token) {
-        try {
-            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-            const conteudo = JSON.parse(atob(base64));
-            return !conteudo.exp || conteudo.exp * 1000 <= Date.now();
-        } catch (e) {
-            return true;
-        }
-    }
-
-    function salvar(respostaLogin) {
-        localStorage.setItem(CHAVE_TOKEN, respostaLogin.token);
-        localStorage.setItem(CHAVE_USUARIO, JSON.stringify(respostaLogin.usuario));
-    }
-
-    function encerrar() {
-        localStorage.removeItem(CHAVE_TOKEN);
-        localStorage.removeItem(CHAVE_USUARIO);
-    }
-
-    function irParaLogin() {
-        if (!PAGINAS_PUBLICAS.includes(window.location.pathname)) {
-            window.location.href = 'login.html?sessao=expirada';
-        }
-    }
-
-    // Sessão vencida, ou usuário salvo sem token (login feito antes desta versão): descarta.
-    const tokenAtual = ler(CHAVE_TOKEN);
-    if ((tokenAtual && tokenExpirado(tokenAtual)) || (!tokenAtual && ler(CHAVE_USUARIO))) {
-        encerrar();
-    }
-
-    const fetchOriginal = window.fetch.bind(window);
-
-    window.fetch = async function (recurso, opcoes = {}) {
-        const endereco = new URL(recurso instanceof Request ? recurso.url : String(recurso), window.location.href);
-        const mesmaOrigem = endereco.origin === window.location.origin;
-        const token = ler(CHAVE_TOKEN);
-
-        if (mesmaOrigem && token) {
-            const cabecalhos = new Headers(opcoes.headers || (recurso instanceof Request ? recurso.headers : undefined));
-            if (!cabecalhos.has('Authorization')) {
-                cabecalhos.set('Authorization', 'Bearer ' + token);
-            }
-            opcoes = { ...opcoes, headers: cabecalhos };
-        }
-
-        const resposta = await fetchOriginal(recurso, opcoes);
-
-        if (mesmaOrigem && token && resposta.status === 401) {
-            encerrar();
-            irParaLogin();
-        }
-        return resposta;
-    };
-
-    window.Sessao = { salvar, encerrar };
-})();
+export function exigirLogin({ admin = false } = {}) {
+  const usuario = usuarioAtual();
+  if (!usuario) {
+    const voltar = encodeURIComponent(location.pathname.replace(/^\//, "") + location.search);
+    location.replace(`entrar.html?voltar=${voltar}`);
+    return null;
+  }
+  if (admin && !ehAdmin(usuario)) {
+    location.replace("painel.html");
+    return null;
+  }
+  return usuario;
+}
