@@ -505,8 +505,8 @@ select:focus {
 /* ---------- Grade de horários ---------- */
 
 .grade {
-  --celula: 1fr;
   display: grid;
+  max-width: 44rem;
   grid-template-columns: 2.6rem repeat(18, minmax(0, 1fr));
   gap: 3px;
   font-size: 0.75rem;
