@@ -25,6 +25,10 @@ const elementos = {
   verPainel: document.getElementById("ver-painel"),
 };
 
+function contar(quantidade, singular, plural) {
+  return `${formatarNumero(quantidade)} ${quantidade === 1 ? singular : plural}`;
+}
+
 const estado = { empresa: null, nomeArquivo: "", cabecalhos: [], linhas: [], mapeamento: {} };
 
 if (usuario) {
@@ -95,7 +99,7 @@ elementos.usarExemplo.addEventListener("click", () => carregarTexto("exemplo-con
 function mostrarColunas() {
   elementos.etapaColunas.hidden = false;
   elementos.resumoArquivo.textContent =
-    `${estado.nomeArquivo}: ${formatarNumero(estado.linhas.length)} linhas e ${estado.cabecalhos.length} colunas. ` +
+    `${estado.nomeArquivo}: ${contar(estado.linhas.length, "linha", "linhas")} e ${contar(estado.cabecalhos.length, "coluna", "colunas")}. ` +
     "A Digitalize escolheu as colunas abaixo pelo nome; corrija se alguma estiver errada.";
 
   const opcoes = (selecionada) =>
@@ -144,8 +148,8 @@ function atualizarResumo() {
   const { posts, ignoradas } = montarPosts(estado.linhas, estado.mapeamento);
   elementos.importar.disabled = posts.length === 0;
   elementos.resumoImportacao.textContent = posts.length
-    ? `${formatarNumero(posts.length)} posts prontos para importar${
-        ignoradas ? `; ${formatarNumero(ignoradas)} linhas sem data válida serão ignoradas` : ""
+    ? `${contar(posts.length, "post pronto", "posts prontos")} para importar${
+        ignoradas ? `; ${contar(ignoradas, "linha sem data válida será ignorada", "linhas sem data válida serão ignoradas")}` : ""
       }. Posts que já existem só têm as métricas atualizadas.`
     : "Nenhuma linha tem uma data reconhecível. Confira a coluna de data e hora.";
 }
@@ -162,7 +166,7 @@ elementos.importar.addEventListener("click", () =>
       });
       mostrarAviso(
         elementos.resultado,
-        `Importação concluída: ${formatarNumero(r.posts_novos)} posts novos e ${formatarNumero(r.posts_atualizados)} atualizados, ` +
+        `Importação concluída: ${contar(r.posts_novos, "post novo", "posts novos")} e ${contar(r.posts_atualizados, "atualizado", "atualizados")}, ` +
           `publicados de ${formatarData(r.periodo_inicio)} a ${formatarData(r.periodo_fim)}.`,
         "sucesso"
       );
