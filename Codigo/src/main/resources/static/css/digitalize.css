@@ -940,6 +940,10 @@ th {
   font-size: 0.9rem;
 }
 
+td.numero {
+  white-space: nowrap;
+}
+
 td.acoes-tabela {
   white-space: nowrap;
   text-align: right;
