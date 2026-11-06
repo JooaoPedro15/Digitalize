@@ -50,4 +50,18 @@ class GuiaServiceTest {
         assertThat(guia.insights()).anyMatch(texto -> texto.contains("20h"));
         assertThat(guia.oQueEvitar()).anyMatch(texto -> texto.contains("9h"));
     }
+
+    @Test
+    void guiaLocalNaoRecomendaEvitarOMesmoTema() {
+        GuiaService.Analise analise = GuiaService.Analise.de(List.of(
+                post(20, "Bastidores", 1000, 200),
+                post(9, "Bastidores", 1000, 10),
+                post(13, "Promoção", 1000, 5)));
+
+        GuiaPostagem guia = GuiaService.guiaLocal(analise);
+
+        assertThat(guia.sugestoesPosts()).extracting(GuiaPostagem.Sugestao::titulo)
+                .containsExactly("Repita o tema: Bastidores", "Repita o tema: Promoção");
+        assertThat(guia.oQueEvitar()).noneMatch(texto -> texto.contains("Bastidores"));
+    }
 }

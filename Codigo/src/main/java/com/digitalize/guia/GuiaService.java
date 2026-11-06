@@ -11,10 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -82,15 +85,28 @@ public class GuiaService {
     static GuiaPostagem guiaLocal(Analise analise) {
         int melhorHora = analise.melhoresHorarios().get(0);
         Post melhorPost = analise.melhores().get(0);
-        Post piorPost = analise.piores().get(0);
 
-        List<GuiaPostagem.Sugestao> sugestoes = analise.melhores().stream()
+        // A mesma legenda pode se repetir: cada tema só entra uma vez nas sugestões
+        Map<String, Post> temas = new LinkedHashMap<>();
+        analise.melhores().forEach(post -> temas.putIfAbsent(post.getLegenda(), post));
+
+        List<GuiaPostagem.Sugestao> sugestoes = temas.values().stream()
                 .limit(3)
                 .map(post -> new GuiaPostagem.Sugestao(
-                        "Repita o tema: " + legendaOuPadrao(post, 40),
+                        tituloDaSugestao(post),
                         "Publique algo parecido por volta das " + melhorHora + "h.",
                         "Esse post teve " + post.engajamentoPorMil() + " interações a cada mil visualizações."))
                 .toList();
+
+        Set<String> temasSugeridos = sugestoes.stream().map(GuiaPostagem.Sugestao::titulo).collect(Collectors.toSet());
+        List<String> evitar = new ArrayList<>();
+        evitar.add("Postar às " + analise.piorHorario() + "h, o horário com menor engajamento.");
+        // Um tema recomendado nas sugestões não pode aparecer também como algo a evitar
+        analise.piores().stream()
+                .filter(post -> !temasSugeridos.contains(tituloDaSugestao(post)))
+                .findFirst()
+                .ifPresent(post -> evitar.add(
+                        "Repetir o formato de \"" + legendaOuPadrao(post, 60) + "\", um dos posts com menos interações."));
 
         return new GuiaPostagem(
                 "Guia calculado a partir das métricas de " + analise.total() + " posts do período.",
@@ -100,9 +116,12 @@ public class GuiaService {
                 analise.melhoresHorarios().stream().map(hora -> String.format("%02d:00", hora)).toList(),
                 List.of("Frases curtas e diretas", "Fale como você fala com o cliente no balcão",
                         "Termine com um convite: encomende, comente ou salve"),
-                List.of("Postar às " + analise.piorHorario() + "h, o horário com menor engajamento.",
-                        "Repetir o formato de \"" + legendaOuPadrao(piorPost, 60) + "\", o post com menos interações."),
+                evitar,
                 sugestoes);
+    }
+
+    private static String tituloDaSugestao(Post post) {
+        return "Repita o tema: " + legendaOuPadrao(post, 40);
     }
 
     private static String legendaOuPadrao(Post post, int limite) {
