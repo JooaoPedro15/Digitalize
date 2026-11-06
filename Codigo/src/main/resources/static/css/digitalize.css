@@ -327,6 +327,10 @@ select:focus {
   border-radius: var(--raio-pequeno);
 }
 
+.topo nav .botao {
+  white-space: nowrap;
+}
+
 .topo nav a:not(.botao):hover {
   background: var(--ceu);
 }
